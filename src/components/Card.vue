@@ -7,7 +7,7 @@ export default {
 <template>
   <div class="flex justify-start gap-5 hover:scale-[1.05] mt-3">
     <div
-      class="border-transparent w-24 border-[#B0B0B0] bg-white shadow-custom rounded-lg px-5 py-2"
+      class="border-transparent min-h-[108px] min-w-[104px] border-[#B0B0B0] bg-white shadow-custom rounded-lg px-1 py-2"
     >
       <div class="gap-5 font-normal">
         <div class="text-right pb-0 mb-0">
@@ -15,8 +15,8 @@ export default {
             {{ `#00${region?.id}` }}
           </sup>
         </div>
-        <div class="mb-3">
-          <p class="text-xs">{{ region?.name }}</p>
+        <div class="mt-[55px] bottom-0">
+          <p class="text-xs text-center">{{ region?.name }}</p>
         </div>
       </div>
     </div>

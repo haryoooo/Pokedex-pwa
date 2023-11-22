@@ -6,7 +6,7 @@ export default {
 </script>
 
 <template>
-  <div class="text-center">
+  <div class="text-center mx-3 py-3">
     <div class="flex justify-start mb-5 gap-3">
       <div>
         <img src="../assets/images/pokeball.png" alt="pokeball" />

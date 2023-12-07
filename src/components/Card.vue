@@ -1,15 +1,25 @@
 <script>
+import { useRouter } from 'vue-router';
+
 export default {
   name: "Card",
   props: ["region"],
+  setup() {
+    const router = useRouter();
+
+    const navigateToItem = (id) => {
+      router.push(`/item/${id}`)
+    };
+
+    return { navigateToItem }
+  }
 };
 </script>
 <template>
   <div class="flex justify-start gap-5 hover:scale-[1.05] mt-3">
     <div
-      class="border-transparent min-h-[108px] min-w-[104px] border-[#B0B0B0] bg-white shadow-custom rounded-lg px-1 py-2"
-    >
-      <div class="gap-5 font-normal">
+      class="border-transparent min-h-[108px] min-w-[104px] border-[#B0B0B0] bg-white shadow-custom rounded-lg px-1 py-2">
+      <div class="gap-5 font-normal" @click="navigateToItem(region?.id)">
         <div class="text-right pb-0 mb-0">
           <sup>
             {{ `#00${region?.id}` }}

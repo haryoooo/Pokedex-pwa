@@ -1,36 +1,43 @@
 <script>
 import Headers from "../components/Header.vue";
-import Projects from "../components/Projects.vue";
-import Skills from "../components/Skills.vue";
-import Footer from "../components/Footer.vue";
-import Testimony from "../components/Testimony.vue";
+import Region from "../components/Region.vue";
+import PokemonList from "../components/PokemonList.vue";
+import PokemonItem from "../components/PokemonItem.vue";
 import { useRoute } from "vue-router";
 import { ref, watchEffect } from "vue";
 
 export default {
   name: "HomeView",
-  components: { Headers, Projects, Footer, Skills, Testimony },
+  components: { Headers, Region, PokemonList, PokemonItem },
   props: ["value", "loading"],
   setup() {
     const route = useRoute();
-    const currentPath = ref(route.params.id);
+    const currentPath = ref(route?.path);
+    const currentId = ref(route?.params?.id);
 
     // Watch for changes in the route and update the currentPath variable
     watchEffect(() => {
-      currentPath.value = route.params.id;
+      currentPath.value = route?.path;
+      currentId.value = route?.params?.id;
     });
 
     return {
       currentPath,
+      currentId,
     };
   },
 };
 </script>
 
 <template>
-  <Headers :value="value" :loading="loading" />
-  <Item v-if="currentPath" :id="currentPath" />
-  <Projects v-if="!currentPath" />
+  <Headers
+    v-if="!currentPath?.includes('item')"
+    :value="value"
+    :loading="loading"
+  />
+  <PokemonItem v-if="currentPath?.includes('item')" :id="currentId" />
+  <PokemonList v-if="currentPath?.includes('region')" :id="currentId" />
+  <Region v-if="!currentId" />
 </template>
 
 <style scoped></style>

@@ -30,14 +30,10 @@ export default {
 </script>
 
 <template>
-  <Headers
-    v-if="!currentPath?.includes('item')"
-    :value="value"
-    :loading="loading"
-  />
+  <Headers v-if="!currentPath?.includes('item')" :value="value" :loading="loading" />
   <PokemonItem v-if="currentPath?.includes('item')" :id="currentId" />
   <PokemonList v-if="currentPath?.includes('region')" :id="currentId" />
-  <Region v-if="!currentId" />
+  <Region v-if="currentPath === '/'" />
 </template>
 
 <style scoped></style>

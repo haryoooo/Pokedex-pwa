@@ -1,5 +1,6 @@
 <script>
 import { useRoute, useRouter } from "vue-router";
+import Pagination from "../components/Pagination.vue";
 import { ref, watchEffect } from "vue";
 
 export default {
@@ -232,7 +233,7 @@ export default {
                 <div
                   :class="['progress-bar', data?.types?.[0]?.type?.name]"
                   :style="{
-                    width: `${value?.base_stat}%`,
+                    maxWidth: `${value?.base_stat}%`,
                   }"
                 ></div>
               </div>
@@ -242,6 +243,7 @@ export default {
       </div>
     </div>
   </div>
+  <Pagination :data="data" />
 </template>
 <style scoped>
 .container {

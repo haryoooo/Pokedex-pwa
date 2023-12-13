@@ -39,16 +39,16 @@ export default {
 
     getDataList();
 
-    return { data };
+    return { data, loading };
   },
 };
 </script>
 
 <template>
-  <div class="my-5 bg-white rounded-lg px-3 py-2 min-h-524">
+  <div class="my-5 bg-white rounded-lg px-3 py-2 min-h-screen">
     <div class="flex flex-row flex-wrap">
       <div class="cursor-pointer mx-auto" v-for="val in data">
-        <Card :data="val" />
+        <Card :data="val" :loading="loading" />
       </div>
     </div>
   </div>

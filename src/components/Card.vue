@@ -4,7 +4,13 @@ import { ref, watchEffect } from "vue";
 
 export default {
   name: "Card",
-  props: ["data", "loading"],
+  props: {
+    loading: Boolean,
+    data: {
+      type: Object,
+      required: true,
+    },
+  },
   setup(props) {
     const { data, loading } = props;
 

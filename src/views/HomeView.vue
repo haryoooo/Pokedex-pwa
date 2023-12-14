@@ -9,7 +9,13 @@ import { ref, watchEffect } from "vue";
 export default {
   name: "HomeView",
   components: { Headers, Region, PokemonList, PokemonItem },
-  props: ["value", "loading"],
+  props: {
+    loading: Boolean,
+    value: {
+      type: Array,
+      required: true,
+    },
+  },
   setup() {
     const route = useRoute();
     const currentPath = ref(route?.path);

@@ -1,6 +1,5 @@
 <script>
 import { useRoute, useRouter } from "vue-router";
-import Pagination from "../components/Pagination.vue";
 import { ref, watchEffect } from "vue";
 
 export default {
@@ -65,7 +64,6 @@ export default {
 };
 </script>
 <template>
-  {{ console.log(data) }}
   <div :class="data?.types?.[0]?.type?.name">
     <div class="flex flex-row justify-between p-3">
       <div class="flex flex-row">
@@ -91,32 +89,22 @@ export default {
     </div>
 
     <div
-      class="border-transparent min-h-[108px] min-w-[104px] border-[#B0B0B0] bg-white shadow-custom rounded-lg px-1 py-2 mx-2"
-    >
-      <div
-        class="absolute top-60 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
-      >
+      class="border-transparent min-h-[108px] min-w-[104px] border-[#B0B0B0] bg-white shadow-custom rounded-lg px-1 py-2 mx-2">
+      <div class="absolute top-60 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
         <div class="text-center">
-          <img
-            :src="
-              data?.sprites?.other?.['official-artwork']?.front_default ||
-              'fallback-image-url'
-            "
-            width="250"
-            alt="pokemon-img"
-          />
+          <img :src="data?.sprites?.other?.['official-artwork']?.front_default ||
+            'fallback-image-url'
+            " width="250" alt="pokemon-img" />
         </div>
       </div>
 
       <div class="mt-[100px] capitalize text-white mx-auto">
         <div class="flex flex-row justify-center gap-2">
           <div class="place-items-center" v-for="value in data?.types">
-            <div
-              :class="[
-                'border rounded-lg font-medium capitalize p-1',
-                value?.type?.name,
-              ]"
-            >
+            <div :class="[
+              'border rounded-lg font-medium capitalize p-1',
+              value?.type?.name,
+            ]">
               {{ value?.type?.name }}
             </div>
           </div>
@@ -125,14 +113,12 @@ export default {
 
       <div class="capitalize text-white mx-auto">
         <div class="mt-5 text-lg">
-          <div
-            :class="[
-              'capitalize',
-              'text-center',
-              'font-semibold',
-              'color-' + data?.types?.[0]?.type?.name,
-            ]"
-          >
+          <div :class="[
+            'capitalize',
+            'text-center',
+            'font-semibold',
+            'color-' + data?.types?.[0]?.type?.name,
+          ]">
             About
           </div>
         </div>
@@ -180,70 +166,51 @@ export default {
 
       <div>
         <div>
-          <h3
-            :class="[
-              'text-lg',
-              'capitalize',
-              'text-center',
-              'font-semibold',
-              'color-' + data?.types?.[0]?.type?.name,
-            ]"
-          >
+          <h3 :class="[
+            'text-lg',
+            'capitalize',
+            'text-center',
+            'font-semibold',
+            'color-' + data?.types?.[0]?.type?.name,
+          ]">
             Base Stats
           </h3>
         </div>
 
         <div class="flex flex-row justify-start">
-          <div
-            class="flex justify-between font-bold flex-col leading-5 text-xs my-5 mx-3"
-          >
-            <div
-              :class="[
-                'capitalize',
-                'border-r-2 border-solid border-gray-300 ',
-                'color-' + data?.types?.[0]?.type?.name,
-              ]"
-              v-for="value in data?.stats"
-            >
+          <div class="flex justify-between font-bold flex-col leading-5 text-xs my-5 mx-3">
+            <div :class="[
+              'capitalize',
+              'border-r-2 border-solid border-gray-300 ',
+              'color-' + data?.types?.[0]?.type?.name,
+            ]" v-for="value in data?.stats">
               <div class="font-bold mr-3">
                 {{ value?.stat?.name }}
               </div>
             </div>
           </div>
 
-          <div
-            class="flex justify-between font-bold flex-col leading-5 text-xs my-5"
-          >
+          <div class="flex justify-between font-bold flex-col leading-5 text-xs my-5">
             <div v-for="value in data?.stats">
               <div class="font-bold">
                 {{
-                  value?.base_stat > 9 && value?.base_stat < 100
-                    ? `0${value?.base_stat}`
-                    : `${value?.base_stat}`
-                }}
+                  value?.base_stat > 9 && value?.base_stat < 100 ? `0${value?.base_stat}` : `${value?.base_stat}` }} </div>
               </div>
             </div>
-          </div>
 
-          <div
-            class="flex justify-between font-bold flex-col leading-5 text-xs my-7 mx-3"
-          >
-            <div v-for="value in data?.stats">
-              <div class="progress-container">
-                <div
-                  :class="['progress-bar', data?.types?.[0]?.type?.name]"
-                  :style="{
+            <div class="flex justify-between font-bold flex-col leading-5 text-xs my-7 mx-3">
+              <div v-for="value in data?.stats">
+                <div class="progress-container">
+                  <div :class="['progress-bar', data?.types?.[0]?.type?.name]" :style="{
                     maxWidth: `${value?.base_stat}%`,
-                  }"
-                ></div>
+                  }"></div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-  <Pagination :data="data" />
 </template>
 <style scoped>
 .container {
@@ -269,12 +236,15 @@ export default {
 .normal {
   background-color: #a8a878 !important;
 }
+
 .psychic {
   background-color: #f85888 !important;
 }
+
 .fire {
   background-color: #f08030 !important;
 }
+
 .dragon {
   background-color: #7038f8 !important;
 }
@@ -310,12 +280,15 @@ export default {
 .color-normal {
   color: #a8a878 !important;
 }
+
 .color-psychic {
   color: #f85888 !important;
 }
+
 .color-fire {
   color: #f08030 !important;
 }
+
 .color-dragon {
   color: #7038f8 !important;
 }
@@ -333,19 +306,25 @@ export default {
 }
 
 .vertical-line {
-  border-left: 2px solid #e0e0e0; /* Adjust color and thickness as needed */
-  height: 8vh; /* Adjust height as needed */
-  margin-left: 20px; /* Adjust left margin as needed */
+  border-left: 2px solid #e0e0e0;
+  /* Adjust color and thickness as needed */
+  height: 8vh;
+  /* Adjust height as needed */
+  margin-left: 20px;
+  /* Adjust left margin as needed */
 }
 
 .vertical-line-sm {
-  border-left: 2px solid #e0e0e0; /* Adjust color and thickness as needed */
-  height: 2vh; /* Adjust height as needed */
+  border-left: 2px solid #e0e0e0;
+  /* Adjust color and thickness as needed */
+  height: 2vh;
+  /* Adjust height as needed */
 }
 
 .progress-container {
   min-width: 200px;
-  height: 7px; /* Adjust the height as needed */
+  height: 7px;
+  /* Adjust the height as needed */
   background-color: #f1f1f1;
   overflow: hidden;
   border-radius: 12px;
@@ -353,7 +332,8 @@ export default {
 
 .progress-bar {
   height: 100%;
-  transition: width 0.5s ease; /* Animation duration and easing */
+  transition: width 0.5s ease;
+  /* Animation duration and easing */
   animation: progressAnimation 1s ease;
 }
 
@@ -361,6 +341,7 @@ export default {
   from {
     width: 0;
   }
+
   to {
     width: 100%;
   }

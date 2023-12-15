@@ -1,4 +1,4 @@
-<script>
+<!-- <script>
 import { ref } from "vue";
 import Card from "../components/Card.vue";
 import { region } from "../constants/region.js";
@@ -27,4 +27,4 @@ export default {
   </div>
 </template>
 
-<style scoped></style>
+<style scoped></style> -->

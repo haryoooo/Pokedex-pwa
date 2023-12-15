@@ -18,7 +18,7 @@ export default {
   },
   setup(props) {
     const { data, perPage } = props
-    console.log(perPage);
+
     const currentPage = ref(1);
 
     const totalPages = computed(() => Math.ceil(data?.length / perPage));

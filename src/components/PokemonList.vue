@@ -1,15 +1,15 @@
 <script>
 import { ref } from "vue";
-import Card from "./Card.vue";
+import PokemonItem from "./PokemonItem.vue";
 import Pagination from "./Pagination.vue";
 import { useRouter } from "vue-router";
 
 export default {
   name: "Pokemon List",
-  components: { Card, Pagination },
+  components: { PokemonItem, Pagination },
   setup() {
     const router = useRouter();
-    const data = ref([]);
+    const data = ref(Array.from({ length: 20 }));
     const loading = ref(false);
 
     const navigateToDetail = (id) => {
@@ -19,6 +19,7 @@ export default {
     const getDataList = async () => {
       try {
         loading.value = true;
+
         const getData = await fetch("https://pokeapi.co/api/v2/pokemon/");
         const dataValue = await getData.json();
 
@@ -30,10 +31,11 @@ export default {
           dataValue?.results?.map((el) => fetchData(el?.url))
         );
 
-        data.value = result;
-
         loading.value = false;
+
+        data.value = result;
       } catch (error) {
+        loading.value = false;
         console.log(error);
       }
     };
@@ -46,13 +48,14 @@ export default {
 </script>
 
 <template>
+  {{ console.log(loading, data) }}
   <div class="my-5 bg-white rounded-lg px-3 py-2 m-1 min-h-screen">
     <div class="flex flex-row flex-wrap">
       <div class="cursor-pointer mx-auto" v-for="val in data">
-        <Card :data="val" :loading="loading" />
+        <PokemonItem :data="val" :loading="loading" />
       </div>
       <div class="mx-auto">
-      <Pagination :data="data" :loading="loading" />
+        <Pagination :data="data" :loading="loading" />
       </div>
     </div>
   </div>

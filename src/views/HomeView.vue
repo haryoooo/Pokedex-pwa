@@ -1,14 +1,13 @@
 <script>
 import Headers from "../components/Header.vue";
-import Region from "../components/Region.vue";
 import PokemonList from "../components/PokemonList.vue";
-import PokemonItem from "../components/PokemonItem.vue";
+import PokemonDetail from "../components/PokemonDetail.vue";
 import { useRoute } from "vue-router";
 import { ref, watchEffect } from "vue";
 
 export default {
   name: "HomeView",
-  components: { Headers, Region, PokemonList, PokemonItem },
+  components: { Headers, PokemonList, PokemonDetail },
   props: {
     loading: Boolean,
     value: {
@@ -36,10 +35,13 @@ export default {
 </script>
 
 <template>
-  <Headers v-if="!currentPath?.includes('item')" :value="value" :loading="loading" />
-  <PokemonItem v-if="currentPath?.includes('item')" :id="currentId" />
-  <PokemonList v-if="currentPath?.includes('region')" :id="currentId" />
-  <Region v-if="currentPath === '/'" />
+  <Headers
+    v-if="!currentPath?.includes('item')"
+    :value="value"
+    :loading="loading"
+  />
+  <PokemonDetail v-if="currentPath?.includes('item')" :id="currentId" />
+  <PokemonList v-if="currentPath === '/'" />
 </template>
 
 <style scoped></style>

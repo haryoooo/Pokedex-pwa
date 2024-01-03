@@ -1,9 +1,11 @@
 <script>
 import { useRouter } from "vue-router";
+import Skeleton from "./Skeleton.vue";
 import { ref, watchEffect } from "vue";
 
 export default {
   name: "Pokemon Item",
+  components: { Skeleton },
   props: {
     loading: Boolean,
     data: {
@@ -42,22 +44,10 @@ export default {
 </script>
 <template>
   <div class="flex justify-start gap-5 hover:scale-[1.05] mt-3">
-    <!-- <div v-if="loading"
-      class="border-transparent min-h-[108px] min-w-[104px] border-[#B0B0B0] bg-white shadow-custom rounded-lg px-1 py-2">
-      <div class="gap-5 font-normal" @click="navigateToDetail('region', data?.id)">
-        <div class="text-right pb-0 mb-0">
-          <sup>
-            {{ `#00${data?.id}` }}
-          </sup>
-        </div>
-        <div class="mt-[55px] bottom-0">
-          <p class="text-xs text-center">{{ data?.name }}</p>
-        </div>
-      </div>
-    </div> -->
+    <Skeleton v-if="loading" />
 
-    <div
-      :class="!data?.abilities ? 'border-transparent min-h-[108px] min-w-[104px] border-[#B0B0B0] bg-white shadow-custom rounded-lg px-1 py-2 animate-pulse' : 'border-transparent min-h-[108px] min-w-[104px] border-[#B0B0B0] bg-white shadow-custom rounded-lg px-1 py-2'">
+    <div v-if="!loading"
+      class="border-transparent min-h-[108px] min-w-[104px] border-[#B0B0B0] bg-white shadow-custom rounded-lg px-1 py-2">
       <div @click="navigateToDetail('item', data?.name)">
         <div class="text-right pb-0 mb-0">
           <sup class="font-semibold">

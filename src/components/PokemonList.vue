@@ -1,12 +1,13 @@
 <script>
 import { ref } from "vue";
 import PokemonItem from "./PokemonItem.vue";
+import Skeleton from "./Skeleton.vue";
 import Pagination from "./Pagination.vue";
 import { useRouter } from "vue-router";
 
 export default {
   name: "Pokemon List",
-  components: { PokemonItem, Pagination },
+  components: { PokemonItem, Skeleton, Pagination },
   setup() {
     const router = useRouter();
     const data = ref(Array.from({ length: 20 }));
@@ -52,9 +53,10 @@ export default {
   <div class="my-5 bg-white rounded-lg px-3 py-2 m-1 min-h-screen">
     <div class="flex flex-row flex-wrap">
       <div class="cursor-pointer mx-auto" v-for="val in data">
-        <PokemonItem :data="val" :loading="loading" />
+        <Skeleton v-if="loading" />
+        <PokemonItem v-if="!loading" :data="val" :loading="loading" />
       </div>
-      <div class="mx-auto">
+      <div v-if="!loading" class="mx-auto">
         <Pagination :data="data" :loading="loading" />
       </div>
     </div>

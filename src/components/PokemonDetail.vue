@@ -5,17 +5,16 @@ import { ref, watchEffect } from "vue";
 export default {
   name: "Pokemon Detail",
   props: {
-    loading: Boolean,
     data: {
       type: Array,
       required: true,
     },
   },
-  setup(props) {
-    const { loading } = props;
-
+  setup() {
     const route = useRoute();
     const router = useRouter();
+
+    const loading = ref(false);
     const currentPath = ref(route?.params?.id);
     const data = ref();
     const order = ref();
@@ -40,6 +39,8 @@ export default {
     };
 
     const getDataDetail = async () => {
+      loading.value = true;
+
       const url = `https://pokeapi.co/api/v2/pokemon/${route?.params?.id}`;
 
       const response = await fetch(url);
@@ -50,6 +51,8 @@ export default {
       const jsonSpecies = await responseSpecies.json();
 
       data.value = { ...json, detail: jsonSpecies };
+
+      loading.value = false;
 
       convertZero(json?.id);
     };
@@ -74,7 +77,14 @@ export default {
 };
 </script>
 <template>
-  <div :class="data?.types?.[0]?.type?.name">
+  <div
+    v-if="loading"
+    class="flex justify-center bg-white text-lg text-black content-center min-h-[100vh] items-center mx-auto"
+  >
+    <div>Loading...</div>
+  </div>
+
+  <div v-if="!loading" :class="data?.types?.[0]?.type?.name">
     <div class="flex flex-row justify-between p-3">
       <div class="flex flex-row">
         <div class="cursor-pointer" @click="goBack()">
@@ -99,22 +109,44 @@ export default {
     </div>
 
     <div
-      class="border-transparent min-h-[108px] min-w-[104px] border-[#B0B0B0] bg-white shadow-custom rounded-lg px-1 py-2 mx-2">
-      <div class="absolute top-60 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+      class="border-transparent min-h-[108px] min-w-[104px] border-[#B0B0B0] bg-white shadow-custom rounded-lg px-1 py-2 mx-2"
+    >
+      <div
+        class="absolute top-60 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+      >
         <div class="text-center">
-          <img :src="data?.sprites?.other?.['official-artwork']?.front_default ||
-            'fallback-image-url'
-            " width="250" alt="pokemon-img" />
+          <img
+            v-motion
+            :initial="{
+              opacity: 0,
+              y: 100,
+            }"
+            :enter="{
+              opacity: 1,
+              transition: {
+                delay: 500,
+              },
+              y: 0,
+            }"
+            :src="
+              data?.sprites?.other?.['official-artwork']?.front_default ||
+              'fallback-image-url'
+            "
+            width="250"
+            alt="pokemon-img"
+          />
         </div>
       </div>
 
       <div class="mt-[100px] capitalize text-white mx-auto">
         <div class="flex flex-row justify-center gap-2">
           <div class="place-items-center" v-for="value in data?.types">
-            <div :class="[
-              'border rounded-lg font-medium capitalize p-1',
-              value?.type?.name,
-            ]">
+            <div
+              :class="[
+                'border rounded-lg font-medium capitalize p-1',
+                value?.type?.name,
+              ]"
+            >
               {{ value?.type?.name }}
             </div>
           </div>
@@ -123,12 +155,14 @@ export default {
 
       <div class="capitalize text-white mx-auto">
         <div class="mt-5 text-lg">
-          <div :class="[
-            'capitalize',
-            'text-center',
-            'font-semibold',
-            'color-' + data?.types?.[0]?.type?.name,
-          ]">
+          <div
+            :class="[
+              'capitalize',
+              'text-center',
+              'font-semibold',
+              'color-' + data?.types?.[0]?.type?.name,
+            ]"
+          >
             About
           </div>
         </div>
@@ -176,51 +210,69 @@ export default {
 
       <div>
         <div>
-          <h3 :class="[
-            'text-lg',
-            'capitalize',
-            'text-center',
-            'font-semibold',
-            'color-' + data?.types?.[0]?.type?.name,
-          ]">
+          <h3
+            :class="[
+              'text-lg',
+              'capitalize',
+              'text-center',
+              'font-semibold',
+              'color-' + data?.types?.[0]?.type?.name,
+            ]"
+          >
             Base Stats
           </h3>
         </div>
 
         <div class="flex flex-row justify-start">
-          <div class="flex justify-between font-bold flex-col leading-5 text-xs my-5 mx-3">
-            <div :class="[
-              'capitalize',
-              'border-r-2 border-solid border-gray-300 ',
-              'color-' + data?.types?.[0]?.type?.name,
-            ]" v-for="value in data?.stats">
+          <div
+            class="flex justify-between font-bold flex-col leading-5 text-xs my-5 mx-3"
+          >
+            <div
+              :class="[
+                'capitalize',
+                'border-r-2 border-solid border-gray-300 ',
+                'color-' + data?.types?.[0]?.type?.name,
+              ]"
+              v-for="value in data?.stats"
+            >
               <div class="font-bold mr-3">
                 {{ value?.stat?.name }}
               </div>
             </div>
           </div>
 
-          <div class="flex justify-between font-bold flex-col leading-5 text-xs my-5">
+          <div
+            class="flex justify-between font-bold flex-col leading-5 text-xs my-5"
+          >
             <div v-for="value in data?.stats">
               <div class="font-bold">
                 {{
-                  value?.base_stat > 9 && value?.base_stat < 100 ? `0${value?.base_stat}` : `${value?.base_stat}` }} </div>
+                  value?.base_stat > 9 && value?.base_stat < 100
+                    ? `0${value?.base_stat}`
+                    : `${value?.base_stat}`
+                }}
               </div>
             </div>
+          </div>
 
-            <div class="flex justify-between font-bold flex-col leading-5 text-xs my-7 mx-3">
-              <div v-for="value in data?.stats">
-                <div class="progress-container">
-                  <div :class="['progress-bar', data?.types?.[0]?.type?.name]" :style="{
+          <div
+            class="flex justify-between font-bold flex-col leading-5 text-xs my-7 mx-3"
+          >
+            <div v-for="value in data?.stats">
+              <div class="progress-container">
+                <div
+                  :class="['progress-bar', data?.types?.[0]?.type?.name]"
+                  :style="{
                     maxWidth: `${value?.base_stat}%`,
-                  }"></div>
-                </div>
+                  }"
+                ></div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
 </template>
 <style scoped>
 .container {

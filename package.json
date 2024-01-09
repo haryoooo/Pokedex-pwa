@@ -13,6 +13,7 @@
     "bootstrap-vue": "^2.23.1",
     "firebase": "^10.5.0",
     "vue": "^3.3.4",
+    "vue-awesome-paginate": "^1.1.46",
     "vue-router": "^4.2.4"
   },
   "devDependencies": {

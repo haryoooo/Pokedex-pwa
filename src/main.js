@@ -4,9 +4,13 @@ import { MotionPlugin } from "@vueuse/motion";
 import { createApp } from "vue";
 import App from "./App.vue";
 import router from "./router";
+import VueAwesomePaginate from "vue-awesome-paginate";
+
+// import the necessary css file
+import "vue-awesome-paginate/dist/style.css";
 
 const app = createApp(App);
 
-app.use(router).use(MotionPlugin);
+app.use(router).use(MotionPlugin).use(VueAwesomePaginate);
 
 app.mount("#app");

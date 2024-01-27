@@ -3,24 +3,23 @@ import { ref, watchEffect } from "vue";
 import PokemonItem from "./PokemonItem.vue";
 import Skeleton from "./Skeleton.vue";
 import Pagination from "./Pagination.vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 
 export default {
   name: "Pokemon List",
   components: { PokemonItem, Skeleton, Pagination },
   setup() {
-    const router = useRouter();
+    const route = useRoute();
     const data = ref(Array.from({ length: 20 }));
     const pagination = ref({});
     const loading = ref(false);
 
     const getDataList = async (params) => {
       try {
-        // console.log(params);
         loading.value = true;
 
         const getData = await fetch(
-          params ? params : "https://pokeapi.co/api/v2/pokemon/"
+          `https://pokeapi.co/api/v2/pokemon/?offset=${params}&limit=20`
         );
         const dataValue = await getData.json();
 
@@ -49,7 +48,7 @@ export default {
     };
 
     watchEffect(() => {
-      getDataList();
+      getDataList(route?.query?.offset);
     });
 
     return { data, loading, pagination, getDataList };
@@ -64,7 +63,7 @@ export default {
         <Skeleton v-if="loading" />
         <PokemonItem v-if="!loading" :data="val" :loading="loading" />
       </div>
-      <div v-if="!loading" class="mx-auto">
+      <div class="mx-auto">
         <Pagination
           :data="data"
           :loading="loading"

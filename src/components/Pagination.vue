@@ -40,30 +40,16 @@ export default {
       return data?.slice(startIndex, endIndex);
     });
 
-    const setCurrentPage = (page, type) => {
-      console.log(page, type);
-      // if (args?.type === "next") {
-      //   const currsPage = Number(args.page);
-      //   const computedOffset = Number(args?.page) * 20;
+    const setCurrentPage = (page) => {
+      const currsPage = Number(page);
+      const computedOffset = page === 1 ? 0 : Number(page) * 20 - 20;
 
-      //   currentPage.value = currsPage;
-      //   offset.value = computedOffset;
-      // }
-
-      // if (args?.type === "prev" && args?.page > 1) {
-      //   const currsPage = args?.page === 1 ? 1 : args.page - 1;
-      //   const computedOffsets = args.offset - 20;
-
-      //   currentPage.value = currsPage;
-      //   offset.value = computedOffsets;
-
-      //   console.log(currsPage, computedOffsets);
-      // }
+      currentPage.value = currsPage;
+      offset.value = computedOffset;
     };
 
     watchEffect(() => {
       currentPath.value = route?.query?.page;
-      // offset.value = route?.query?.offset;
 
       router?.push(`?page=${currentPage?.value}&offset=${offset.value}`);
     });
@@ -82,17 +68,16 @@ export default {
 </script>
 
 <template>
-  <!-- {{ console.log(pagination) }} -->
   <div class="example-six">
     <vue-awesome-paginate
       :total-items="pagination?.count"
       v-model="currentPage"
       :items-per-page="perPage"
       :max-pages-shown="2"
-      :on-click="setCurrentPage"
+      :on-click="(e) => setCurrentPage(e)"
     >
       <template #prev-button>
-        <span @click="() => setCurrentPage(currentPath.value, 'prev')">
+        <span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="white"
@@ -106,7 +91,7 @@ export default {
       </template>
 
       <template #next-button>
-        <span @click="() => setCurrentPage(currentPath.value, 'next')">
+        <span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="white"

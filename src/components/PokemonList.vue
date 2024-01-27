@@ -1,5 +1,5 @@
 <script>
-import { ref } from "vue";
+import { ref, watchEffect } from "vue";
 import PokemonItem from "./PokemonItem.vue";
 import Skeleton from "./Skeleton.vue";
 import Pagination from "./Pagination.vue";
@@ -16,6 +16,7 @@ export default {
 
     const getDataList = async (params) => {
       try {
+        // console.log(params);
         loading.value = true;
 
         const getData = await fetch(
@@ -47,7 +48,9 @@ export default {
       }
     };
 
-    getDataList();
+    watchEffect(() => {
+      getDataList();
+    });
 
     return { data, loading, pagination, getDataList };
   },

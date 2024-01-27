@@ -1,6 +1,6 @@
 <script>
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/vue/20/solid";
-import { ref, computed } from "vue";
+import { ref, computed, watchEffect } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 export default {
@@ -31,6 +31,7 @@ export default {
     const currentPage = ref(1);
     const offset = ref(0);
 
+    const currentPath = ref(route?.query?.page);
     const totalPages = computed(() => Math.ceil(pagination?.count / perPage));
 
     const paginatedData = computed(() => {
@@ -39,23 +40,37 @@ export default {
       return data?.slice(startIndex, endIndex);
     });
 
-    const setCurrentPage = (pageNumber) => {
-      let element = 0;
-      // console.log(pageNumber);
-      router?.push(`?page=${pageNumber}`);
+    const setCurrentPage = (page, type) => {
+      console.log(page, type);
+      // if (args?.type === "next") {
+      //   const currsPage = Number(args.page);
+      //   const computedOffset = Number(args?.page) * 20;
 
-      for (let i = 0; i < pageNumber; i++) {
-        offset.value += 20;
-      }
+      //   currentPage.value = currsPage;
+      //   offset.value = computedOffset;
+      // }
 
-      console.log(element);
-      // if (pageNumber >= 1 && pageNumber <= totalPages.value) {
-      //   currentPage.value = pageNumber;
+      // if (args?.type === "prev" && args?.page > 1) {
+      //   const currsPage = args?.page === 1 ? 1 : args.page - 1;
+      //   const computedOffsets = args.offset - 20;
+
+      //   currentPage.value = currsPage;
+      //   offset.value = computedOffsets;
+
+      //   console.log(currsPage, computedOffsets);
       // }
     };
 
+    watchEffect(() => {
+      currentPath.value = route?.query?.page;
+      // offset.value = route?.query?.offset;
+
+      router?.push(`?page=${currentPage?.value}&offset=${offset.value}`);
+    });
+
     return {
       getDataList,
+      currentPath,
       currentPage,
       totalPages,
       paginatedData,
@@ -67,7 +82,7 @@ export default {
 </script>
 
 <template>
-  {{ console.log(pagination) }}
+  <!-- {{ console.log(pagination) }} -->
   <div class="example-six">
     <vue-awesome-paginate
       :total-items="pagination?.count"
@@ -77,7 +92,7 @@ export default {
       :on-click="setCurrentPage"
     >
       <template #prev-button>
-        <span @click="getDataList(pagination?.previous)">
+        <span @click="() => setCurrentPage(currentPath.value, 'prev')">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="white"
@@ -91,7 +106,7 @@ export default {
       </template>
 
       <template #next-button>
-        <span @click="getDataList(pagination?.next)">
+        <span @click="() => setCurrentPage(currentPath.value, 'next')">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="white"
@@ -106,6 +121,7 @@ export default {
     </vue-awesome-paginate>
   </div>
 </template>
+
 <style>
 textarea:focus,
 input:focus {

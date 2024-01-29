@@ -1,5 +1,5 @@
 <script>
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import Skeleton from "./Skeleton.vue";
 import { ref, watchEffect } from "vue";
 
@@ -12,10 +12,12 @@ export default {
       type: Object,
       required: true,
     },
+    searchValue: String,
   },
   setup(props) {
-    const { data, loading } = props;
+    const { data, loading, searchValue } = props;
 
+    const route = useRoute();
     const router = useRouter();
     const order = ref();
 
@@ -31,7 +33,14 @@ export default {
     };
 
     const navigateToDetail = (type, id) => {
-      router.push(`/${type}/${id}`);
+      router.push(
+        `/${type}/${id}?${
+          searchValue
+            ? `search=${searchValue}`
+            : `page=${route?.query?.page}&offset=${route?.query?.offset}
+        `
+        }`
+      );
     };
 
     watchEffect(() => {
@@ -46,8 +55,10 @@ export default {
   <div class="flex justify-start gap-5 hover:scale-[1.05] mt-3">
     <Skeleton v-if="loading" />
 
-    <div v-if="!loading"
-      class="border-transparent min-h-[108px] min-w-[104px] border-[#B0B0B0] bg-white shadow-custom rounded-lg px-1 py-2">
+    <div
+      v-if="!loading"
+      class="border-transparent min-h-[108px] min-w-[104px] border-[#B0B0B0] bg-white shadow-custom rounded-lg px-1 py-2"
+    >
       <div @click="navigateToDetail('item', data?.name)">
         <div class="text-right pb-0 mb-0">
           <sup class="font-semibold">
@@ -56,9 +67,14 @@ export default {
         </div>
 
         <div class="text-center mx-auto">
-          <img :src="data?.sprites?.other?.['official-artwork']?.front_default ||
-            'fallback-image-url'
-            " width="100" alt="pokemon-img" />
+          <img
+            :src="
+              data?.sprites?.other?.['official-artwork']?.front_default ||
+              'fallback-image-url'
+            "
+            width="100"
+            alt="pokemon-img"
+          />
         </div>
         <div class="bottom-0">
           <p class="text-xs text-center capitalize font-semibold">
@@ -70,19 +86,3 @@ export default {
   </div>
 </template>
 <style scoped></style>
-
-<!-- <h1 class="text-xl font-bold mt-1">{{ element?.title }}</h1>
-        <h4 class="text-md text-[#B0B0B0] mt-3">
-          {{ `This is ${element?.title} projects` }}
-        </h4>
-        <div class="flex flex-row justify-start my-3">
-          <div
-            v-for="(el, index) in element?.technology"
-            :key="index"
-            class="bg-[#fbfbfb] rounded-lg mr-3"
-          >
-            <div class="border-transparent">
-              <img width="30" :src="el" alt="tech-skill" />
-            </div>
-          </div>
-        </div> -->

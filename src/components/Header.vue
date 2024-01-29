@@ -1,7 +1,25 @@
 <script>
 export default {
   name: "Header",
-  props: ["value", "loading"],
+  props: {
+    loading: Boolean,
+    value: {
+      type: Object,
+      required: true,
+    },
+    setSearch: Function,
+    searchValue: String,
+  },
+  emits: ["change"],
+  setup(props, { emit }) {
+    const setSearch = (e) => {
+      emit("change", e.target.value);
+    };
+
+    return {
+      setSearch,
+    };
+  },
 };
 </script>
 
@@ -28,6 +46,8 @@ export default {
                 class="min-w-min outline-none"
                 type="text"
                 placeholder="Search"
+                :value="searchValue"
+                @input="setSearch"
               />
             </div>
           </div>

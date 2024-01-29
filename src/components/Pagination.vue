@@ -1,16 +1,11 @@
 <script>
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/vue/20/solid";
-import { ref, computed, watchEffect } from "vue";
-import { useRoute, useRouter } from "vue-router";
 
 export default {
   name: "Pagination",
   components: { ChevronLeftIcon, ChevronRightIcon },
   props: {
     loading: Boolean,
-    getDataList: {
-      type: Function,
-    },
     pagination: {
       type: Object,
     },
@@ -22,45 +17,27 @@ export default {
       type: Number,
       default: 20,
     },
+    currentPages: Number,
   },
-  setup(props) {
-    const { data, perPage, pagination, getDataList } = props;
+  emits: ["update:currentPages", "setCurrPage"], // Explicitly declare emitted events
+  setup(props, { emit }) {
+    const { perPage, pagination, currentPages, totalPages, paginatedData } =
+      props;
 
-    const route = useRoute();
-    const router = useRouter();
-    const currentPage = ref(1);
-    const offset = ref(0);
-
-    const currentPath = ref(route?.query?.page);
-    const totalPages = computed(() => Math.ceil(pagination?.count / perPage));
-
-    const paginatedData = computed(() => {
-      const startIndex = (currentPage.value - 1) * perPage;
-      const endIndex = startIndex + perPage;
-      return data?.slice(startIndex, endIndex);
-    });
-
-    const setCurrentPage = (page) => {
+    const setCurrPage = (page) => {
       const currsPage = Number(page);
       const computedOffset = page === 1 ? 0 : Number(page) * 20 - 20;
 
-      currentPage.value = currsPage;
-      offset.value = computedOffset;
+      emit("update:currentPages", currsPage); // Emit v-model update
+      emit("setCurrPage", currsPage, computedOffset);
     };
 
-    watchEffect(() => {
-      currentPath.value = route?.query?.page;
-
-      router?.push(`?page=${currentPage?.value}&offset=${offset.value}`);
-    });
-
     return {
-      getDataList,
-      currentPath,
-      currentPage,
+      currentPage: currentPages,
+      perPage,
       totalPages,
       paginatedData,
-      setCurrentPage,
+      setCurrPage,
       pagination,
     };
   },
@@ -74,7 +51,7 @@ export default {
       v-model="currentPage"
       :items-per-page="perPage"
       :max-pages-shown="2"
-      :on-click="(e) => setCurrentPage(e)"
+      :on-click="setCurrPage"
     >
       <template #prev-button>
         <span>

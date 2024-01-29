@@ -21,7 +21,9 @@ export default {
     const progress = ref(0);
 
     const goBack = () => {
-      router.push(`/`);
+      router.push(
+        `/?page=${route?.query?.page}&offset=${route?.query?.offset}`
+      );
     };
 
     const convertZero = (id) => {
@@ -33,6 +35,10 @@ export default {
 
       if (id > 9 && id < 100) {
         strNumber = id > 9 && id < 100 ? `#0${id}` : `#${id}`;
+      }
+
+      if (id > 100) {
+        strNumber = `#${id}`;
       }
 
       order.value = strNumber;
@@ -109,32 +115,32 @@ export default {
     </div>
 
     <div
-      class="border-transparent min-h-[108px] min-w-[104px] border-[#B0B0B0] bg-white shadow-custom rounded-lg px-1 py-2 mx-2"
+      class="border-transparent min-h-[108px] min-w-[104px] border-[#B0B0B0] bg-white shadow-custom rounded-lg px-1 mx-2"
     >
-      <div
-        class="absolute top-60 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
-      >
+      <div class="container mx-auto flex justify-center items-center h-[50px]">
         <div class="text-center">
-          <img
-            v-motion
-            :initial="{
-              opacity: 0,
-              y: 100,
-            }"
-            :enter="{
-              opacity: 1,
-              transition: {
-                delay: 500,
-              },
-              y: 0,
-            }"
-            :src="
-              data?.sprites?.other?.['official-artwork']?.front_default ||
-              'fallback-image-url'
-            "
-            width="250"
-            alt="pokemon-img"
-          />
+          <div class="text-center">
+            <img
+              v-motion
+              :initial="{
+                opacity: 0,
+                y: 100,
+              }"
+              :enter="{
+                opacity: 1,
+                transition: {
+                  delay: 500,
+                },
+                y: 0,
+              }"
+              :src="
+                data?.sprites?.other?.['official-artwork']?.front_default ||
+                'fallback-image-url'
+              "
+              width="270"
+              alt="pokemon-img"
+            />
+          </div>
         </div>
       </div>
 
@@ -143,7 +149,7 @@ export default {
           <div class="place-items-center" v-for="value in data?.types">
             <div
               :class="[
-                'border rounded-lg font-medium capitalize p-1',
+                'border rounded-lg font-medium capitalize text-center p-1 min-w-[50px]',
                 value?.type?.name,
               ]"
             >
@@ -295,8 +301,16 @@ export default {
   background-color: #a040a0 !important;
 }
 
+.fighting {
+  background-color: #c22e28 !important;
+}
+
 .normal {
   background-color: #a8a878 !important;
+}
+
+.ground {
+  background-color: #e2bf65 !important;
 }
 
 .psychic {
@@ -323,6 +337,42 @@ export default {
   background-color: #a890f0 !important;
 }
 
+.ghost {
+  background-color: #735797 !important;
+}
+
+.rock {
+  background-color: #b6a136 !important;
+}
+
+.steel {
+  background-color: #b7b7ce !important;
+}
+
+.dark {
+  background-color: #705746 !important;
+}
+
+.fairy {
+  background-color: #d685ad !important;
+}
+
+.color-dark {
+  color: #705746 !important;
+}
+
+.color-fairy {
+  color: #d685ad !important;
+}
+
+.color-steel {
+  color: #b7b7ce !important;
+}
+
+.color-rock {
+  color: #b6a136 !important;
+}
+
 .color-grass {
   color: #74cb48 !important;
 }
@@ -335,8 +385,16 @@ export default {
   color: #98d8d8 !important;
 }
 
+.color-fighting {
+  color: #c22e28 !important;
+}
+
 .color-poison {
   color: #a040a0 !important;
+}
+
+.color-ground {
+  color: #e2bf65 !important;
 }
 
 .color-normal {
@@ -365,6 +423,10 @@ export default {
 
 .color-flying {
   color: #a890f0 !important;
+}
+
+.color-ghost {
+  color: #735797 !important;
 }
 
 .vertical-line {

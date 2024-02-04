@@ -10,22 +10,6 @@ export default {
     const headers = ref(null);
     const loading = ref(false);
 
-    // const getDataList = async () => {
-    //   try {
-    //     loading.value = true;
-    //     const getData = await getDocs(collection(db, "dataList"));
-
-    //     getData.forEach((el) => {
-    //       headers.value = el?.data();
-    //     });
-    //     loading.value = false;
-    //   } catch (error) {
-    //     console.log(error);
-    //   }
-    // };
-
-    // getDataList();
-
     return { headers, loading };
   },
 };

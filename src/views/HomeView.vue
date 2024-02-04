@@ -43,7 +43,7 @@ export default {
 
     const setSearch = _debounce((value) => {
       searchValue.value = value;
-    }, 500);
+    }, 300);
 
     const paginatedData = computed(() => {
       const startIndex = (currentPage.value - 1) * perPage;
@@ -56,6 +56,8 @@ export default {
     const getDataList = async (params) => {
       try {
         loading.value = true;
+
+        data.value = Array.from({ length: 20 });
 
         if (searchValue?.value?.length === 0) {
           const getData = await fetch(
@@ -72,11 +74,11 @@ export default {
             dataValue?.results?.map((el) => fetchData(el?.url))
           );
 
+          data.value = result;
+
           loading.value = false;
 
           isError.value = false;
-
-          data.value = result;
 
           dataDetail.value = {};
 
@@ -88,6 +90,8 @@ export default {
         }
 
         if (searchValue?.value?.length > 0) {
+          loading.value = true;
+
           const urlSpecies = `https://pokeapi.co/api/v2/pokemon-species/${searchValue?.value}/`;
           const responseSpecies = await fetch(urlSpecies);
           const jsonSpecies = await responseSpecies.json();
@@ -158,7 +162,7 @@ export default {
       <div class="flex flex-row flex-wrap">
         <div
           v-if="!isError && Object.keys(dataDetail)?.length === 0"
-          class="cursor-pointer mx-auto"
+          :class="`cursor-pointer mx-auto ${loading ? 'm-1' : ''}`"
           v-for="val in data"
         >
           <Skeleton v-if="loading" />
@@ -166,11 +170,17 @@ export default {
         </div>
 
         <div class="mx-auto">
-          <div class="my-[40vh] text-lg self-center" v-if="isError">
+          <div
+            class="my-[40vh] text-lg self-center"
+            v-if="
+              isError ||
+              (searchValue?.value?.length > 0 &&
+                Object.keys(dataDetail)?.length === 0)
+            "
+          >
             No Data Found
           </div>
           <div
-            class="my-[40vh]"
             v-if="!isError && Object.keys(dataDetail)?.length > 0"
           >
             <PokemonItem :data="dataDetail" />

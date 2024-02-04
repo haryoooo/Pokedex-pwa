@@ -47,16 +47,61 @@ export default {
     const getDataDetail = async () => {
       loading.value = true;
 
-      const url = `https://pokeapi.co/api/v2/pokemon/${route?.params?.id}`;
+      let evolution = {};
 
-      const response = await fetch(url);
-      const json = await response.json();
+      const fetchPokemonData = async (url) => {
+        const response = await fetch(url);
+        return response.json();
+      };
+
+      const batchFetchEvolution = async (urls) => {
+        const responses = await Promise.allSettled(urls.map(fetchPokemonData));
+        return responses.map((response) => ({ ...response?.value }));
+      };
+
+      const fetchEvolutionChain = async (url) => {
+        const response = await fetch(url);
+        return response.json();
+      };
+
+      const url = `https://pokeapi.co/api/v2/pokemon/${route?.params?.id}`;
+      const json = await fetchPokemonData(url);
 
       const urlSpecies = `https://pokeapi.co/api/v2/pokemon-species/${json?.id}/`;
-      const responseSpecies = await fetch(urlSpecies);
-      const jsonSpecies = await responseSpecies.json();
+      const jsonSpecies = await fetchPokemonData(urlSpecies);
 
-      data.value = { ...json, detail: jsonSpecies };
+      if (jsonSpecies) {
+        const evolutionSpecies = await fetchEvolutionChain(
+          jsonSpecies?.evolution_chain?.url
+        );
+
+        let evolutionUrls = [
+          `https://pokeapi.co/api/v2/pokemon/${evolutionSpecies?.chain?.species?.name}`,
+          `https://pokeapi.co/api/v2/pokemon/${evolutionSpecies?.chain.evolves_to?.[0]?.species?.name}`,
+          `https://pokeapi.co/api/v2/pokemon/${evolutionSpecies?.chain.evolves_to?.[0]?.evolves_to?.[0]?.species?.name}`,
+        ];
+
+        if (
+          evolutionSpecies?.chain.evolves_to?.[0]?.evolves_to?.[0]?.length > 0
+        ) {
+          evolutionUrls = [
+            `https://pokeapi.co/api/v2/pokemon/${evolutionSpecies?.chain?.species?.name}`,
+            `https://pokeapi.co/api/v2/pokemon/${evolutionSpecies?.chain.evolves_to?.[0]?.species?.name}`,
+          ];
+        }
+
+        const evolutionDetails = await batchFetchEvolution(evolutionUrls);
+
+        const filteredEvolution =
+          typeof evolutionDetails?.[2] === "object" &&
+          Object?.keys(evolutionDetails?.[2])?.length === 0
+            ? evolutionDetails?.slice(0, -1)
+            : evolutionDetails;
+
+        evolution = filteredEvolution;
+      }
+
+      data.value = { ...json, detail: jsonSpecies, evolution };
 
       loading.value = false;
 
@@ -85,7 +130,7 @@ export default {
 <template>
   <div
     v-if="loading"
-    class="flex justify-center bg-white text-lg text-black content-center min-h-[100vh] items-center mx-auto"
+    class="flex justify-center bg-white text-lg text-black content-center min-h-[120vh] items-center mx-auto"
   >
     <div>Loading...</div>
   </div>
@@ -115,7 +160,7 @@ export default {
     </div>
 
     <div
-      class="border-transparent min-h-[108px] min-w-[104px] border-[#B0B0B0] bg-white shadow-custom rounded-lg px-1 mx-2"
+      class="border-transparent min-h-[120vh] min-w-[104px] border-[#B0B0B0] bg-white shadow-custom rounded-lg px-1 mx-2"
     >
       <div class="container mx-auto flex justify-center items-center h-[50px]">
         <div class="text-center">
@@ -214,6 +259,8 @@ export default {
         {{ data?.detail?.flavor_text_entries?.[0]?.flavor_text }}
       </div>
 
+      <div class="horizontal-line my-5 mx-3"></div>
+
       <div>
         <div>
           <h3
@@ -272,6 +319,78 @@ export default {
                     maxWidth: `${value?.base_stat}%`,
                   }"
                 ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          v-if="
+            typeof data?.evolution?.[1] === 'object' &&
+            Object.keys(data?.evolution?.[1])?.length > 0
+          "
+        >
+          <div class="horizontal-line my-5 mx-3"></div>
+
+          <div>
+            <h3
+              :class="[
+                'text-lg',
+                'capitalize',
+                'text-center',
+                'font-semibold',
+                'color-' + data?.types?.[0]?.type?.name,
+              ]"
+            >
+              Evolution
+            </h3>
+          </div>
+
+          <div
+            :class="
+              data?.evolution?.length === 2
+                ? 'flex justify-center items-center my-12 mx-10'
+                : 'flex justify-between items-center my-12 mx-5'
+            "
+          >
+            <div class="mx-auto" v-for="(item, idx) in data?.evolution">
+              <div
+                v-if="Object.keys(data?.evolution?.[idx])?.length > 0"
+                class="container mx-auto flex justify-center items-center h-[50px]"
+              >
+                <div class="text-center">
+                  <div class="text-center">
+                    <img
+                      :src="
+                        item?.sprites?.other?.['official-artwork']
+                          ?.front_default || 'fallback-image-url'
+                      "
+                      width="80"
+                      heiht="80"
+                      alt="pokemon-img"
+                    />
+                  </div>
+                  <h3 class="text-sm text-black capitalize text-center mt-3">
+                    {{ item?.name }}
+                  </h3>
+                </div>
+
+                <div
+                  v-if="data?.evolution?.length === 2 ? idx < 1 : idx < 2"
+                  :class="
+                    data?.evolution?.length === 2
+                      ? 'w-[30px] mx-20'
+                      : 'w-[30px] mx-3'
+                  "
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                    <path
+                      font-weight="semibold"
+                      fill="#e0e0e0"
+                      d="M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.8 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"
+                    />
+                  </svg>
+                </div>
               </div>
             </div>
           </div>
@@ -427,6 +546,10 @@ export default {
 
 .color-ghost {
   color: #735797 !important;
+}
+
+.horizontal-line {
+  border-bottom: 2px solid #e0e0e0;
 }
 
 .vertical-line {

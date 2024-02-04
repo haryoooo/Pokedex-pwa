@@ -19,6 +19,7 @@ export default {
 
     const route = useRoute();
     const router = useRouter();
+    const id = ref(data?.id);
     const order = ref();
 
     const convertZero = (value) => {
@@ -44,7 +45,9 @@ export default {
     };
 
     watchEffect(() => {
-      convertZero(data?.id);
+      id.value = data?.id;
+
+      convertZero(id);
     });
 
     return { navigateToDetail, convertZero, order, loading };
@@ -57,7 +60,7 @@ export default {
 
     <div
       v-if="!loading"
-      class="border-transparent min-h-[108px] min-w-[104px] border-[#B0B0B0] bg-white shadow-custom rounded-lg px-1 py-2"
+      class="border-transparent min-h-[108px] min-w-[104px] border-[#B0B0B0] bg-white shadow-custom rounded-lg px-1 py-2 cursor-pointer"
     >
       <div @click="navigateToDetail('item', data?.name)">
         <div class="text-right pb-0 mb-0">

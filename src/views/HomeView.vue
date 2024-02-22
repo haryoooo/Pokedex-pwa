@@ -5,7 +5,7 @@ import Pagination from "../components/Pagination.vue";
 import PokemonItem from "../components/PokemonItem.vue";
 import PokemonDetail from "../components/PokemonDetail.vue";
 import { useRoute, useRouter } from "vue-router";
-import { ref, watchEffect, computed } from "vue";
+import { ref, watchEffect, computed, watch } from "vue";
 import _debounce from "lodash/debounce";
 
 export default {
@@ -30,6 +30,7 @@ export default {
     const currentPath = ref(route?.path);
     const currentId = ref(route?.params?.id);
     const searchValue = ref("");
+    const filteredValue = ref("");
 
     const pagination = ref({});
     const currentPage = ref(route?.query?.page ?? 1);
@@ -53,13 +54,58 @@ export default {
 
     const totalPages = computed(() => Math.ceil(pagination?.count / perPage));
 
-    const getDataList = async (params) => {
+    const filterByType = async (data) => {
+      if (data === route?.query?.isFiltered) return;
+
+      const dataToLowerCase = data?.toLowerCase();
+
+      const url = `https://pokeapi.co/api/v2/type/${dataToLowerCase}`;
+
+      const getDataByType = await fetch(url);
+      const dataJsonByType = await getDataByType.json();
+
+      const payload = dataJsonByType?.pokemon?.map((el) => el?.pokemon);
+
+      filteredValue.value = dataToLowerCase;
+
+      getDataList(payload, true);
+    };
+
+    const getDataList = async (params, isFiltered) => {
       try {
         loading.value = true;
 
         data.value = Array.from({ length: 20 });
 
-        if (searchValue?.value?.length === 0) {
+        if (isFiltered) {
+          const fetchData = async (url) => {
+            const response = await fetch(url);
+
+            return response.json();
+          };
+          const result = await Promise.all(
+            params?.map((el) => fetchData(el?.url))
+          );
+
+          data.value = result;
+
+          dataDetail.value = {};
+
+          pagination.value = {
+            count: data.value?.length,
+          };
+
+          isError.value = false;
+
+          setTimeout(() => {
+            loading.value = false;
+          }, 500);
+        }
+
+        if (
+          searchValue?.value?.length === 0 &&
+          filteredValue?.value?.length === 0
+        ) {
           const getData = await fetch(
             `https://pokeapi.co/api/v2/pokemon/?offset=${params}&limit=20`
           );
@@ -76,10 +122,6 @@ export default {
 
           data.value = result;
 
-          loading.value = false;
-
-          isError.value = false;
-
           dataDetail.value = {};
 
           pagination.value = {
@@ -87,6 +129,12 @@ export default {
             next: dataValue?.next,
             previous: dataValue?.previous,
           };
+
+          isError.value = false;
+
+          // setTimeout(() => {
+          loading.value = false;
+          // }, 500);
         }
 
         if (searchValue?.value?.length > 0) {
@@ -118,14 +166,26 @@ export default {
       currentPath.value = route?.path;
       currentId.value = route?.params?.id;
 
-      const query =
+      const querySearch =
         searchValue?.value?.length > 0 ? `&search=${searchValue?.value}` : "";
 
+      const queryFilter =
+        filteredValue?.value?.length > 0
+          ? `&isFiltered=${filteredValue?.value}`
+          : "";
+
       router?.push(
-        `?page=${currentPage?.value}&offset=${offset?.value}${query}`
+        `?page=${currentPage?.value}&offset=${offset?.value}${querySearch}${queryFilter}`
       );
 
-      if (!currentPath?.value?.includes("item")) {
+      if (filteredValue?.value?.length > 0) {
+        filterByType(filteredValue.value);
+      }
+
+      if (
+        !currentPath?.value?.includes("item") &&
+        (route?.query?.isFiltered?.length === 0 || !route?.query?.isFiltered)
+      ) {
         getDataList(route?.query?.offset);
       }
     });
@@ -145,6 +205,8 @@ export default {
       pagination,
       paginatedData,
       perPage,
+      filterByType,
+      filteredValue,
     };
   },
 };
@@ -156,6 +218,8 @@ export default {
       :value="value"
       :loading="loading"
       :search-value="searchValue"
+      :filter="filteredValue"
+      @handleFiltered="filterByType"
       @change="setSearch"
     />
     <div class="my-5 bg-white rounded-lg px-3 py-2 m-1 min-h-screen">
@@ -180,15 +244,18 @@ export default {
           >
             No Data Found
           </div>
-          <div
-            v-if="!isError && Object.keys(dataDetail)?.length > 0"
-          >
+          <div v-if="!isError && Object.keys(dataDetail)?.length > 0">
             <PokemonItem :data="dataDetail" />
           </div>
         </div>
 
         <div
-          v-if="!loading && !isError && Object.keys(dataDetail)?.length === 0"
+          v-if="
+            !loading &&
+            !isError &&
+            pagination?.next &&
+            Object.keys(dataDetail)?.length === 0
+          "
           class="mx-auto"
         >
           <Pagination

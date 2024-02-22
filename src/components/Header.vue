@@ -1,6 +1,11 @@
 <script>
+import { ref, watchEffect } from "vue";
+import { useRoute } from "vue-router";
+import CardSort from "../components/CardSort.vue";
+
 export default {
   name: "Header",
+  components: { CardSort },
   props: {
     loading: Boolean,
     value: {
@@ -8,16 +13,44 @@ export default {
       required: true,
     },
     setSearch: Function,
+    handleFiltered: Function,
     searchValue: String,
   },
-  emits: ["change"],
+  emits: ["change", "handleFiltered"],
   setup(props, { emit }) {
+    const route = useRoute();
+
+    const filter = ref(route?.query?.isFiltered ?? "");
+    const showFilter = ref(false);
+
     const setSearch = (e) => {
       emit("change", e.target.value);
     };
 
+    const handleShowFilter = () => {
+      showFilter.value = !showFilter.value;
+    };
+
+    const handleFiltered = (e, type) => {
+      if (type === "remove") {
+        emit("handleFiltered", e);
+        return;
+      }
+
+      emit("handleFiltered", e);
+      handleShowFilter();
+    };
+
+    watchEffect(() => {
+      filter.value = route?.query?.isFiltered;
+    });
+
     return {
       setSearch,
+      handleFiltered,
+      handleShowFilter,
+      showFilter,
+      filter,
     };
   },
 };
@@ -54,8 +87,29 @@ export default {
         </div>
       </div>
 
-      <div class="rounded-full bg-white cursor-pointer">
-        <div class="mt-2 font-bold text-[#dc0a2d] mx-3">#</div>
+      <div class="rounded-full bg-white cursor-pointer min-w-[80px]">
+        <div
+          v-if="filter?.length > 0"
+          class="mt-2 capitalize font-bold text-sm text-[#dc0a2d]"
+        >
+          <span @click="handleShowFilter">{{ filter }}</span>
+          <span
+            @click="(e) => handleFiltered('', 'remove')"
+            class="ml-2 mt-2 rounded-full bg-red text-sm"
+            >X</span
+          >
+        </div>
+        <div
+          v-if="!filter"
+          @click="handleShowFilter"
+          class="mt-2 font-bold text-[#dc0a2d]"
+        >
+          #
+        </div>
+
+        <div class="absolute z-20" v-if="showFilter">
+          <CardSort :handleFiltered="handleFiltered" />
+        </div>
       </div>
     </div>
   </div>

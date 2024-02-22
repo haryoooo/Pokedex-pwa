@@ -21,7 +21,8 @@ export default {
   },
   emits: ["update:currentPages", "setCurrPage"], // Explicitly declare emitted events
   setup(props, { emit }) {
-    const { perPage, pagination, currentPages, totalPages, paginatedData } = props;
+    const { perPage, pagination, currentPages, totalPages, paginatedData } =
+      props;
 
     const setCurrPage = (page) => {
       const currsPage = Number(page);

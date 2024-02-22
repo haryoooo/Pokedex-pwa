@@ -50,7 +50,12 @@ export default {
       convertZero(id);
     });
 
-    return { navigateToDetail, convertZero, order, loading };
+    return {
+      navigateToDetail,
+      convertZero,
+      order,
+      loading,
+    };
   },
 };
 </script>
@@ -59,7 +64,7 @@ export default {
     <Skeleton v-if="loading" />
 
     <div
-      v-if="!loading"
+      v-if="!loading && Object.keys(data)?.length > 0"
       class="border-transparent min-h-[108px] min-w-[104px] border-[#B0B0B0] bg-white shadow-custom rounded-lg px-1 py-2 cursor-pointer"
     >
       <div @click="navigateToDetail('item', data?.name)">

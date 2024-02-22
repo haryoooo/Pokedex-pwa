@@ -132,7 +132,7 @@ export default {
     v-if="loading"
     class="flex justify-center bg-white text-lg text-black content-center min-h-[120vh] items-center mx-auto"
   >
-    <div>Loading...</div>
+    <div class="animate-bounce">Loading...</div>
   </div>
 
   <div v-if="!loading" :class="data?.types?.[0]?.type?.name">
@@ -160,7 +160,12 @@ export default {
     </div>
 
     <div
-      class="border-transparent min-h-[120vh] min-w-[104px] border-[#B0B0B0] bg-white shadow-custom rounded-lg px-1 mx-2"
+      :class="
+        typeof data?.evolution?.[1] === 'object' &&
+        Object.keys(data?.evolution?.[1])?.length === 0
+          ? 'border-transparent min-h-[90vh] min-w-[104px] border-[#B0B0B0] bg-white shadow-custom rounded-lg px-1 mx-2'
+          : 'border-transparent min-h-[120vh] min-w-[104px] border-[#B0B0B0] bg-white shadow-custom rounded-lg px-1 mx-2'
+      "
     >
       <div class="container mx-auto flex justify-center items-center h-[50px]">
         <div class="text-center">

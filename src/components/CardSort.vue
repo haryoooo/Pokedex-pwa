@@ -6,15 +6,17 @@ export default {
   name: "CardSort",
   props: {
     handleFiltered: Function,
+    handleSort: Function,
   },
   setup(props) {
-    const { handleFiltered } = props;
+    const { handleFiltered, handleSort } = props;
     const route = useRoute();
 
     return {
       types,
       route,
       handleFiltered,
+      handleSort,
     };
   },
 };
@@ -24,15 +26,24 @@ export default {
     <h4 class="headerSort">Sort By:</h4>
 
     <div class="borderSelection">
-      <div class="">
-        <h4>Type:</h4>
+      <div>
+        <div class="flex justify-between">
+          <div class="m-1">
+            <h4>Type:</h4>
+          </div>
+          <div class="m-1" @click="handleSort">
+            <img src="../assets//images/sort.png" width="20" alt="sort" />
+          </div>
+        </div>
         <hr />
         <div v-for="pokemonType in types">
           <div class="flex justify-start mx-2">
             <input
               @change="(e) => handleFiltered(e.target.value)"
               type="radio"
-              :checked="(pokemonType.type).toLowerCase() === route?.query?.isFiltered"
+              :checked="
+                pokemonType.type.toLowerCase() === route?.query?.isFiltered
+              "
               :value="pokemonType.type"
               alt="type-pokemon"
             />
@@ -42,10 +53,6 @@ export default {
           </div>
         </div>
       </div>
-
-      <!-- <div class="">
-        <h4>Most Damage :</h4>
-      </div> -->
     </div>
   </div>
 </template>

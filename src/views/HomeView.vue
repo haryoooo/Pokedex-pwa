@@ -31,6 +31,7 @@ export default {
     const currentId = ref(route?.params?.id);
     const searchValue = ref("");
     const filteredValue = ref("");
+    const isSorted = ref(false);
 
     const pagination = ref({});
     const currentPage = ref(route?.query?.page ?? 1);
@@ -53,6 +54,18 @@ export default {
     });
 
     const totalPages = computed(() => Math.ceil(pagination?.count / perPage));
+
+    const handleSort = (e) => {
+      isSorted.value = !isSorted.value;
+
+      const tempData = data.value;
+
+      data.value = tempData?.sort((a, b) =>
+        isSorted.value
+          ? b?.stats?.[1]?.base_stat - a?.stats?.[1]?.base_stat
+          : a?.stats?.[1]?.base_stat - b?.stats?.[1]?.base_stat
+      );
+    };
 
     const filterByType = async (data) => {
       if (data === route?.query?.isFiltered) return;
@@ -137,7 +150,10 @@ export default {
           // }, 500);
         }
 
-        if (searchValue?.value?.length > 0) {
+        if (
+          searchValue?.value?.length > 0 &&
+          filteredValue?.value?.length === 0
+        ) {
           loading.value = true;
 
           const urlSpecies = `https://pokeapi.co/api/v2/pokemon-species/${searchValue?.value}/`;
@@ -207,6 +223,7 @@ export default {
       perPage,
       filterByType,
       filteredValue,
+      handleSort,
     };
   },
 };
@@ -219,6 +236,7 @@ export default {
       :loading="loading"
       :search-value="searchValue"
       :filter="filteredValue"
+      @handleSort="handleSort"
       @handleFiltered="filterByType"
       @change="setSearch"
     />

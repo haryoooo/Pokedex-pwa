@@ -16,7 +16,7 @@ export default {
     handleFiltered: Function,
     searchValue: String,
   },
-  emits: ["change", "handleFiltered"],
+  emits: ["change", "handleFiltered", "handleSort"],
   setup(props, { emit }) {
     const route = useRoute();
 
@@ -29,6 +29,10 @@ export default {
 
     const handleShowFilter = () => {
       showFilter.value = !showFilter.value;
+    };
+
+    const handleSort = (e) => {
+      emit("handleSort", e);
     };
 
     const handleFiltered = (e, type) => {
@@ -48,6 +52,7 @@ export default {
     return {
       setSearch,
       handleFiltered,
+      handleSort,
       handleShowFilter,
       showFilter,
       filter,
@@ -108,7 +113,7 @@ export default {
         </div>
 
         <div class="absolute z-20" v-if="showFilter">
-          <CardSort :handleFiltered="handleFiltered" />
+          <CardSort :handleFiltered="handleFiltered" :handleSort="handleSort" />
         </div>
       </div>
     </div>

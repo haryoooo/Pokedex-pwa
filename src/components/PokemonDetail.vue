@@ -1,9 +1,11 @@
 <script>
 import { useRoute, useRouter } from "vue-router";
 import { ref, watchEffect } from "vue";
+import Alert from "./Alert.vue";
 
 export default {
   name: "Pokemon Detail",
+  components: { Alert },
   props: {
     data: {
       type: Array,
@@ -19,11 +21,23 @@ export default {
     const data = ref();
     const order = ref();
     const progress = ref(0);
+    const audioPlayer = ref(null);
+    const isClicked = ref(false);
+
+    const isError = ref(false);
 
     const goBack = () => {
       router.push(
         `/?page=${route?.query?.page}&offset=${route?.query?.offset}`
       );
+    };
+
+    const playAudio = () => {
+      isClicked.value = true;
+      audioPlayer.value.play();
+      setTimeout(() => {
+        isClicked.value = false;
+      }, 1000);
     };
 
     const convertZero = (id) => {
@@ -45,67 +59,79 @@ export default {
     };
 
     const getDataDetail = async () => {
-      loading.value = true;
+      try {
+        loading.value = true;
 
-      let evolution = {};
+        let evolution = {};
 
-      const fetchPokemonData = async (url) => {
-        const response = await fetch(url);
-        return response.json();
-      };
+        const fetchPokemonData = async (url) => {
+          const response = await fetch(url);
+          return response.json();
+        };
 
-      const batchFetchEvolution = async (urls) => {
-        const responses = await Promise.allSettled(urls.map(fetchPokemonData));
-        return responses.map((response) => ({ ...response?.value }));
-      };
+        const batchFetchEvolution = async (urls) => {
+          const responses = await Promise.allSettled(
+            urls.map(fetchPokemonData)
+          );
+          return responses.map((response) => ({ ...response?.value }));
+        };
 
-      const fetchEvolutionChain = async (url) => {
-        const response = await fetch(url);
-        return response.json();
-      };
+        const fetchEvolutionChain = async (url) => {
+          const response = await fetch(url);
+          return response.json();
+        };
 
-      const url = `https://pokeapi.co/api/v2/pokemon/${route?.params?.id}`;
-      const json = await fetchPokemonData(url);
+        const url = `https://pokeapi.co/api/v2/pokemon/${route?.params?.id}`;
+        const json = await fetchPokemonData(url);
 
-      const urlSpecies = `https://pokeapi.co/api/v2/pokemon-species/${json?.id}/`;
-      const jsonSpecies = await fetchPokemonData(urlSpecies);
+        const urlSpecies = `https://pokeapi.co/api/v2/pokemon-species/${json?.id}/`;
+        const jsonSpecies = await fetchPokemonData(urlSpecies);
 
-      if (jsonSpecies) {
-        const evolutionSpecies = await fetchEvolutionChain(
-          jsonSpecies?.evolution_chain?.url
-        );
-
-        let evolutionUrls = [
-          `https://pokeapi.co/api/v2/pokemon/${evolutionSpecies?.chain?.species?.name}`,
-          `https://pokeapi.co/api/v2/pokemon/${evolutionSpecies?.chain.evolves_to?.[0]?.species?.name}`,
-          `https://pokeapi.co/api/v2/pokemon/${evolutionSpecies?.chain.evolves_to?.[0]?.evolves_to?.[0]?.species?.name}`,
-        ];
-
-        if (
-          evolutionSpecies?.chain.evolves_to?.[0]?.evolves_to?.[0]?.length > 0
-        ) {
-          evolutionUrls = [
-            `https://pokeapi.co/api/v2/pokemon/${evolutionSpecies?.chain?.species?.name}`,
-            `https://pokeapi.co/api/v2/pokemon/${evolutionSpecies?.chain.evolves_to?.[0]?.species?.name}`,
-          ];
+        if (!jsonSpecies) {
+          loading.value = false;
+          alert("No Data Found");
         }
 
-        const evolutionDetails = await batchFetchEvolution(evolutionUrls);
+        if (jsonSpecies) {
+          const evolutionSpecies = await fetchEvolutionChain(
+            jsonSpecies?.evolution_chain?.url
+          );
 
-        const filteredEvolution =
-          typeof evolutionDetails?.[2] === "object" &&
-          Object?.keys(evolutionDetails?.[2])?.length === 0
-            ? evolutionDetails?.slice(0, -1)
-            : evolutionDetails;
+          let evolutionUrls = [
+            `https://pokeapi.co/api/v2/pokemon/${evolutionSpecies?.chain?.species?.name}`,
+            `https://pokeapi.co/api/v2/pokemon/${evolutionSpecies?.chain.evolves_to?.[0]?.species?.name}`,
+            `https://pokeapi.co/api/v2/pokemon/${evolutionSpecies?.chain.evolves_to?.[0]?.evolves_to?.[0]?.species?.name}`,
+          ];
 
-        evolution = filteredEvolution;
+          if (
+            evolutionSpecies?.chain.evolves_to?.[0]?.evolves_to?.[0]?.length > 0
+          ) {
+            evolutionUrls = [
+              `https://pokeapi.co/api/v2/pokemon/${evolutionSpecies?.chain?.species?.name}`,
+              `https://pokeapi.co/api/v2/pokemon/${evolutionSpecies?.chain.evolves_to?.[0]?.species?.name}`,
+            ];
+          }
+
+          const evolutionDetails = await batchFetchEvolution(evolutionUrls);
+
+          const filteredEvolution =
+            typeof evolutionDetails?.[2] === "object" &&
+            Object?.keys(evolutionDetails?.[2])?.length === 0
+              ? evolutionDetails?.slice(0, -1)
+              : evolutionDetails;
+
+          evolution = filteredEvolution;
+        }
+
+        data.value = { ...json, detail: jsonSpecies, evolution };
+
+        loading.value = false;
+
+        convertZero(json?.id);
+      } catch (error) {
+        isError.value = true;
+        loading.value = false;
       }
-
-      data.value = { ...json, detail: jsonSpecies, evolution };
-
-      loading.value = false;
-
-      convertZero(json?.id);
     };
 
     watchEffect(() => {
@@ -123,6 +149,10 @@ export default {
       order,
       data,
       progress,
+      isError,
+      playAudio,
+      audioPlayer,
+      isClicked,
     };
   },
 };
@@ -130,12 +160,44 @@ export default {
 <template>
   <div
     v-if="loading"
-    class="flex justify-center bg-white text-lg text-black content-center min-h-[120vh] items-center mx-auto"
+    class="flex justify-center text-lg text-white content-center min-h-screen items-center mx-auto"
   >
-    <div class="animate-bounce">Loading...</div>
+    <div class="animate-bounce font-bold">
+      <img src="../assets//images//poke-loader.gif" alt="arrow" />
+    </div>
   </div>
 
-  <div v-if="!loading" :class="data?.types?.[0]?.type?.name">
+  <div
+    v-if="isError"
+    class="flex justify-center text-lg text-black content-center items-center min-h-[100vh] items-center mx-auto"
+  >
+    <div
+      v-motion
+      :initial="{
+        opacity: 0,
+        y: 100,
+      }"
+      :enter="{
+        opacity: 1,
+        transition: {
+          delay: 300,
+        },
+        y: 0,
+      }"
+      class="border-2 bg-white border-grey rounded-md min-w-[300px] min-h-[150px]"
+    >
+      <div class="flex flex-col text-center justify-center content-center">
+        <div class="text-md font-bold mt-5">Error</div>
+        <div class="text-sm my-5">No Data Found</div>
+        <hr />
+        <button @click="goBack()" class="text-cyan-500 font-bold my-2">
+          OK
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div v-if="!loading && !isError" :class="data?.types?.[0]?.type?.name">
     <div class="flex flex-row justify-between p-3">
       <div class="flex flex-row">
         <div class="cursor-pointer" @click="goBack()">
@@ -167,7 +229,14 @@ export default {
           : 'border-transparent min-h-[120vh] min-w-[104px] border-[#B0B0B0] bg-white shadow-custom rounded-lg px-1 mx-2'
       "
     >
-      <div class="container mx-auto flex justify-center items-center h-[50px]">
+      <div
+        @click="playAudio"
+        :class="
+          isClicked
+            ? 'container mx-auto flex justify-center items-center h-[50px] animate-bounce'
+            : 'container mx-auto flex justify-center items-center h-[50px]'
+        "
+      >
         <div class="text-center">
           <div class="text-center">
             <img
@@ -179,7 +248,9 @@ export default {
               :enter="{
                 opacity: 1,
                 transition: {
-                  delay: 500,
+                  type: 'spring',
+                  stiffness: '200',
+                  delay: 300,
                 },
                 y: 0,
               }"
@@ -192,6 +263,11 @@ export default {
             />
           </div>
         </div>
+        <audio
+          ref="audioPlayer"
+          :src="`https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${data?.id}.ogg`"
+          type="audio/ogg"
+        ></audio>
       </div>
 
       <div class="mt-[100px] capitalize text-white mx-auto">

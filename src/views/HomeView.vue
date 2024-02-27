@@ -61,7 +61,7 @@ export default {
       const tempData = data.value;
 
       data.value = tempData?.sort((a, b) =>
-        isSorted.value
+        !isSorted.value
           ? b?.stats?.[1]?.base_stat - a?.stats?.[1]?.base_stat
           : a?.stats?.[1]?.base_stat - b?.stats?.[1]?.base_stat
       );
@@ -100,7 +100,11 @@ export default {
             params?.map((el) => fetchData(el?.url))
           );
 
-          data.value = result;
+          const filterResult = result?.sort(
+            (a, b) => b?.stats?.[1]?.base_stat - a?.stats?.[1]?.base_stat
+          );
+
+          data.value = filterResult;
 
           dataDetail.value = {};
 

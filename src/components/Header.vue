@@ -95,7 +95,7 @@ export default {
       <div class="rounded-full bg-white cursor-pointer min-w-[80px]">
         <div
           v-if="filter?.length > 0"
-          class="mt-2 capitalize font-bold text-sm text-[#dc0a2d]"
+          class="mt-2 capitalize font-bold text-sm text-[#dc211e]"
         >
           <span @click="handleShowFilter">{{ filter }}</span>
           <span
@@ -107,7 +107,7 @@ export default {
         <div
           v-if="!filter"
           @click="handleShowFilter"
-          class="mt-2 font-bold text-[#dc0a2d]"
+          class="mt-2 font-bold text-[#dc211e]"
         >
           #
         </div>

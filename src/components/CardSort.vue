@@ -62,7 +62,7 @@ export default {
   border: 1px solid white;
   border-radius: 12px;
   z-index: 9999;
-  background-color: #dc0a2d;
+  background-color: #dc211e;
 }
 
 .headerSort {

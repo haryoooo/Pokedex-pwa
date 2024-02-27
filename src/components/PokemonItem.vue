@@ -84,8 +84,8 @@ export default {
             alt="pokemon-img"
           />
         </div>
-        <div class="bottom-0">
-          <p class="text-xs text-center capitalize font-semibold">
+        <div class="bottom-0 max-w-[100px]">
+          <p class="text-xs text-center capitalize font-semibold truncate">
             {{ data?.name }}
           </p>
         </div>

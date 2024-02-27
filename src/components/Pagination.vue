@@ -107,7 +107,7 @@ input:focus {
 
 .example-six .back-button,
 .example-six .next-button {
-  background-color: #dc0a2d;
+  background-color: #dc211e;
   color: white;
   border-radius: 8px;
   height: 45px;

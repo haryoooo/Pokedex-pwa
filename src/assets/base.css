@@ -59,7 +59,6 @@ color palette from <https://github.com/vuejs/theme>
 }
 
 body {
-  min-height: 120vh;
   color: var(--color-text);
   background: var(--color-background);
   transition:

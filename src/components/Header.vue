@@ -2,6 +2,7 @@
 import { ref, watchEffect } from "vue";
 import { useRoute } from "vue-router";
 import CardSort from "../components/CardSort.vue";
+import { useOutsideClick } from "../utils";
 
 export default {
   name: "Header",
@@ -39,17 +40,22 @@ export default {
       if (type === "remove") {
         emit("handleFiltered", e);
         return;
+      } else {
+        emit("handleFiltered", e);
+        handleShowFilter();
       }
-
-      emit("handleFiltered", e);
-      handleShowFilter();
     };
+
+    const showFiltered = useOutsideClick(() => {
+      showFilter.value = false;
+    }, showFilter);
 
     watchEffect(() => {
       filter.value = route?.query?.isFiltered;
     });
 
     return {
+      showFiltered,
       setSearch,
       handleFiltered,
       handleSort,
@@ -92,7 +98,10 @@ export default {
         </div>
       </div>
 
-      <div class="rounded-full bg-white cursor-pointer min-w-[80px]">
+      <div
+        ref="showFiltered"
+        class="rounded-full bg-white cursor-pointer min-w-[80px]"
+      >
         <div
           v-if="filter?.length > 0"
           class="mt-2 capitalize font-bold text-sm text-[#dc211e]"

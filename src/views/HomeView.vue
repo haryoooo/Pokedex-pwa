@@ -5,7 +5,7 @@ import Pagination from "../components/Pagination.vue";
 import PokemonItem from "../components/PokemonItem.vue";
 import PokemonDetail from "../components/PokemonDetail.vue";
 import { useRoute, useRouter } from "vue-router";
-import { ref, watchEffect, computed, watch } from "vue";
+import { ref, watchEffect, computed } from "vue";
 import _debounce from "lodash/debounce";
 
 export default {
@@ -24,6 +24,7 @@ export default {
 
     const loading = ref(false);
     const data = ref(Array.from({ length: 20 }));
+    const dataTemp = ref(Array.from({ length: 20 }));
     const dataDetail = ref({});
     const isError = ref(false);
 
@@ -67,10 +68,13 @@ export default {
       );
     };
 
-    const filterByType = async (data) => {
-      if (data === route?.query?.isFiltered) return;
+    const filterByType = async (dataValue) => {
+      if (dataValue === route?.query?.isFiltered) {
+        data.value = dataTemp.value;
+        return;
+      }
 
-      const dataToLowerCase = data?.toLowerCase();
+      const dataToLowerCase = dataValue?.toLowerCase();
 
       const url = `https://pokeapi.co/api/v2/type/${dataToLowerCase}`;
 
@@ -88,9 +92,9 @@ export default {
       try {
         loading.value = true;
 
-        data.value = Array.from({ length: 20 });
+        if (isFiltered && !currentPath?.value?.includes("item")) {
+          data.value = Array.from({ length: 20 });
 
-        if (isFiltered) {
           const fetchData = async (url) => {
             const response = await fetch(url);
 
@@ -105,6 +109,8 @@ export default {
           );
 
           data.value = filterResult;
+
+          dataTemp.value = filterResult;
 
           dataDetail.value = {};
 
@@ -121,8 +127,11 @@ export default {
 
         if (
           searchValue?.value?.length === 0 &&
-          filteredValue?.value?.length === 0
+          filteredValue?.value?.length === 0 &&
+          !currentPath?.value?.includes("item")
         ) {
+          data.value = Array.from({ length: 20 });
+
           const getData = await fetch(
             `https://pokeapi.co/api/v2/pokemon/?offset=${params}&limit=20`
           );
@@ -139,6 +148,8 @@ export default {
 
           data.value = result;
 
+          dataTemp.value = result;
+
           dataDetail.value = {};
 
           pagination.value = {
@@ -149,9 +160,7 @@ export default {
 
           isError.value = false;
 
-          // setTimeout(() => {
           loading.value = false;
-          // }, 500);
         }
 
         if (
@@ -160,13 +169,19 @@ export default {
         ) {
           loading.value = true;
 
-          const urlSpecies = `https://pokeapi.co/api/v2/pokemon-species/${searchValue?.value}/`;
-          const responseSpecies = await fetch(urlSpecies);
-          const jsonSpecies = await responseSpecies.json();
-          const jsonSprites = await fetch(
-            `https://pokeapi.co/api/v2/pokemon/${jsonSpecies?.id}`
-          );
-          const result = await jsonSprites.json();
+          const tempData = dataTemp?.value;
+
+          const filterPokemon = tempData?.filter((el) => {
+            return el?.name === searchValue.value;
+          });
+
+          // const urlSpecies = `https://pokeapi.co/api/v2/pokemon-species/${searchValue?.value}/`;
+          // const responseSpecies = await fetch(urlSpecies);
+          // const jsonSpecies = await responseSpecies.json();
+          // const jsonSprites = await fetch(
+          //   `https://pokeapi.co/api/v2/pokemon/${jsonSpecies?.id}`
+          // );
+          // const result = await jsonSprites.json();
 
           loading.value = false;
 
@@ -174,7 +189,7 @@ export default {
 
           data.value = [];
 
-          dataDetail.value = { ...result, ...jsonSpecies };
+          dataDetail.value = filterPokemon?.length ? filterPokemon?.[0] : {};
         }
       } catch (error) {
         loading.value = false;
@@ -198,7 +213,7 @@ export default {
         `?page=${currentPage?.value}&offset=${offset?.value}${querySearch}${queryFilter}`
       );
 
-      if (filteredValue?.value?.length > 0) {
+      if (filteredValue?.value?.length > 0 && searchValue?.value?.length >= 0) {
         filterByType(filteredValue.value);
       }
 
@@ -207,6 +222,22 @@ export default {
         (route?.query?.isFiltered?.length === 0 || !route?.query?.isFiltered)
       ) {
         getDataList(route?.query?.offset);
+      }
+
+      if (searchValue?.value?.length > 0 && filteredValue?.value?.length > 0) {
+        const tempData = data?.value;
+
+        loading.value = true;
+
+        const dataFiltered = tempData.filter((el) =>
+          el?.name?.includes(searchValue?.value)
+        );
+
+        data.value = dataFiltered;
+
+        loading.value = false;
+
+        isError.value = false;
       }
     });
 
@@ -244,10 +275,14 @@ export default {
       @handleFiltered="filterByType"
       @change="setSearch"
     />
-    <div class="my-5 bg-white rounded-lg px-3 py-2 m-1 min-h-screen">
+    <div class="my-5 bg-white rounded-lg px-1 py-2 m-1 min-h-screen">
       <div class="flex flex-row flex-wrap">
         <div
-          v-if="!isError && Object.keys(dataDetail)?.length === 0"
+          v-if="
+            !isError &&
+            Object.keys(dataDetail)?.length === 0 &&
+            data?.length > 0
+          "
           :class="`cursor-pointer mx-auto ${loading ? 'm-1' : ''}`"
           v-for="val in data"
         >
@@ -260,8 +295,7 @@ export default {
             class="my-[40vh] text-lg self-center"
             v-if="
               isError ||
-              (searchValue?.value?.length > 0 &&
-                Object.keys(dataDetail)?.length === 0)
+              (searchValue?.length > 0 && Object.keys(dataDetail)?.length === 0)
             "
           >
             No Data Found
@@ -276,7 +310,7 @@ export default {
             !loading &&
             !isError &&
             pagination?.next &&
-            Object.keys(dataDetail)?.length === 0
+            Object.keys(data)?.length > 0
           "
           class="mx-auto"
         >

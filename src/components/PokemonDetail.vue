@@ -60,19 +60,25 @@ export default {
 
     const getDataDetail = async () => {
       try {
+        isError.value = false;
         loading.value = true;
 
         let evolution = {};
 
         const fetchPokemonData = async (url) => {
           const response = await fetch(url);
+
+          if (response?.status !== 200) return "Error";
           return response.json();
         };
 
         const batchFetchEvolution = async (urls) => {
+          const filterUrls = urls?.filter((el) => !el?.includes("undefined"));
+
           const responses = await Promise.allSettled(
-            urls.map(fetchPokemonData)
+            filterUrls.map(fetchPokemonData)
           );
+
           return responses.map((response) => ({ ...response?.value }));
         };
 
@@ -87,9 +93,11 @@ export default {
         const urlSpecies = `https://pokeapi.co/api/v2/pokemon-species/${json?.id}/`;
         const jsonSpecies = await fetchPokemonData(urlSpecies);
 
-        if (!jsonSpecies) {
+        if (jsonSpecies === "Error") {
           loading.value = false;
-          alert("No Data Found");
+          data.value = { ...json, detail: {}, evolution: [] };
+          convertZero(json?.id);
+          return;
         }
 
         if (jsonSpecies) {
@@ -171,30 +179,7 @@ export default {
     v-if="isError"
     class="flex justify-center text-lg text-black content-center items-center min-h-[100vh] items-center mx-auto"
   >
-    <div
-      v-motion
-      :initial="{
-        opacity: 0,
-        y: 100,
-      }"
-      :enter="{
-        opacity: 1,
-        transition: {
-          delay: 300,
-        },
-        y: 0,
-      }"
-      class="border-2 bg-white border-grey rounded-md min-w-[300px] min-h-[150px]"
-    >
-      <div class="flex flex-col text-center justify-center content-center">
-        <div class="text-md font-bold mt-5">Error</div>
-        <div class="text-sm my-5">No Data Found</div>
-        <hr />
-        <button @click="goBack()" class="text-cyan-500 font-bold my-2">
-          OK
-        </button>
-      </div>
-    </div>
+    <Alert />
   </div>
 
   <div v-if="!loading && !isError" :class="data?.types?.[0]?.type?.name">
@@ -205,7 +190,7 @@ export default {
         </div>
 
         <div>
-          <h3 class="text-lg mt-1 ml-3 text-white text-center capitalize">
+          <h3 class="text-lg mt-1 ml-3 text-white capitalize">
             {{ currentPath }}
           </h3>
         </div>
@@ -223,9 +208,10 @@ export default {
 
     <div
       :class="
-        typeof data?.evolution?.[1] === 'object' &&
-        Object.keys(data?.evolution?.[1])?.length === 0
-          ? 'border-transparent min-h-[90vh] min-w-[104px] border-[#B0B0B0] bg-white shadow-custom rounded-lg px-1 mx-2'
+        (typeof data?.evolution?.[1] === 'object' &&
+          Object.keys(data?.evolution?.[1])?.length === 0) ||
+        (data?.evolution?.length >= 0 && data?.evolution?.length < 2)
+          ? 'border-transparent min-h-[80vh] min-w-[104px] border-[#B0B0B0] bg-white shadow-custom rounded-lg px-1 mx-2'
           : 'border-transparent min-h-[120vh] min-w-[104px] border-[#B0B0B0] bg-white shadow-custom rounded-lg px-1 mx-2'
       "
     >
@@ -357,16 +343,12 @@ export default {
           </h3>
         </div>
 
-        <div class="flex flex-row justify-start">
+        <div class="flex flex-row justify-between">
           <div
-            class="flex justify-between font-bold flex-col leading-5 text-xs my-5 mx-3"
+            class="flex justify-between font-bold flex-col leading-5 text-xs mx-3"
           >
             <div
-              :class="[
-                'capitalize',
-                'border-r-2 border-solid border-gray-300 ',
-                'color-' + data?.types?.[0]?.type?.name,
-              ]"
+              :class="['capitalize', 'color-' + data?.types?.[0]?.type?.name]"
               v-for="value in data?.stats"
             >
               <div class="font-bold mr-3">
@@ -375,11 +357,15 @@ export default {
             </div>
           </div>
 
+          <div>
+            <hr class="border-l-2 border-solid border-gray-300 h-full" />
+          </div>
+
           <div
-            class="flex justify-between font-bold flex-col leading-5 text-xs my-5"
+            class="flex justify-between font-bold flex-col leading-5 text-xs ml-2"
           >
             <div v-for="value in data?.stats">
-              <div class="font-bold">
+              <div class="base-stat font-bold">
                 {{
                   value?.base_stat > 9 && value?.base_stat < 100
                     ? `0${value?.base_stat}`
@@ -390,7 +376,7 @@ export default {
           </div>
 
           <div
-            class="flex justify-between font-bold flex-col leading-5 text-xs my-7 mx-3"
+            class="flex justify-between font-bold flex-col leading-5 text-xs my-2 mx-3"
           >
             <div v-for="value in data?.stats">
               <div class="progress-container">
@@ -633,6 +619,11 @@ export default {
   border-bottom: 2px solid #e0e0e0;
 }
 
+.base-stat {
+  padding: 0px !important;
+  margin: 0px !important;
+}
+
 .vertical-line {
   border-left: 2px solid #e0e0e0;
   /* Adjust color and thickness as needed */
@@ -650,9 +641,8 @@ export default {
 }
 
 .progress-container {
-  min-width: 200px;
+  min-width: 200px; /* Default width */
   height: 7px;
-  /* Adjust the height as needed */
   background-color: #f1f1f1;
   overflow: hidden;
   border-radius: 12px;
@@ -665,6 +655,19 @@ export default {
   animation: progressAnimation 1s ease;
 }
 
+@media (max-width: 350px) {
+  .progress-container {
+    min-width: 100px; /* Adjust for smaller screens */
+  }
+}
+
+@media (min-width: 380px) {
+  .progress-container {
+    min-width: 200px; /* Adjust for larger screens */
+  }
+}
+
+/* Progress Bar Animation */
 @keyframes progressAnimation {
   from {
     width: 0;

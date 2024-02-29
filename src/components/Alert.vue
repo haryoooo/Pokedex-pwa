@@ -1,11 +1,7 @@
 <script>
-import { ref } from "vue";
-import { useRouter } from "vue-router";
-
 export default {
   name: "Alert",
   setup() {
-    // Method to show the alert
     const handleGoBack = () => {
       window.history.back;
     };
@@ -18,51 +14,30 @@ export default {
 </script>
 
 <template>
-  <div>
-    <!-- Button to trigger the popup -->
-    <button @click="showAlert">Show Alert</button>
-
-    <!-- Popup alert -->
-    <div v-if="isVisible" class="popup">
-      <div class="popup-content">
-        <!-- Close button -->
-        <span class="close" @click="handleGoBack">&times;</span>
-        <!-- Alert message -->
-        <p>This is an alert!</p>
-      </div>
+  <div
+    v-motion
+    :initial="{
+      opacity: 0,
+      y: 100,
+    }"
+    :enter="{
+      opacity: 1,
+      transition: {
+        delay: 300,
+      },
+      y: 0,
+    }"
+    class="border-2 bg-white border-grey rounded-md min-w-[300px] min-h-[150px]"
+  >
+    <div class="flex flex-col text-center justify-center content-center">
+      <div class="text-md font-bold mt-5">Error</div>
+      <div class="text-sm my-5">No Data Found</div>
+      <hr />
+      <button @click="handleGoBack()" class="text-cyan-500 font-bold my-2">
+        OK
+      </button>
     </div>
   </div>
 </template>
 
-<style>
-/* Popup styles */
-.popup {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: #f4f4f4;
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  z-index: 999;
-}
-
-.popup-content {
-  position: relative;
-}
-
-.close {
-  position: absolute;
-  top: 5px;
-  right: 10px;
-  cursor: pointer;
-  font-size: 20px;
-  color: #aaa;
-}
-
-.close:hover {
-  color: #000;
-}
-</style>
+<style scoped></style>

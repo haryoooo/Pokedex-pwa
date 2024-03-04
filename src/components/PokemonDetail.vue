@@ -212,15 +212,15 @@ export default {
           Object.keys(data?.evolution?.[1])?.length === 0) ||
         (data?.evolution?.length >= 0 && data?.evolution?.length < 2)
           ? 'border-transparent min-h-[80vh] min-w-[104px] border-[#B0B0B0] bg-white shadow-custom rounded-lg px-1 mx-2'
-          : 'border-transparent min-h-[120vh] min-w-[104px] border-[#B0B0B0] bg-white shadow-custom rounded-lg px-1 mx-2'
+          : 'border-transparent min-h-[110vh] min-w-[104px] border-[#B0B0B0] bg-white shadow-custom rounded-lg px-1 mx-2'
       "
     >
       <div
         @click="playAudio"
         :class="
           isClicked
-            ? 'container mx-auto flex justify-center items-center h-[50px] animate-bounce'
-            : 'container mx-auto flex justify-center items-center h-[50px]'
+            ? 'container mx-auto flex justify-center items-center h-[20px] animate-bounce'
+            : 'container mx-auto flex justify-center items-center h-[20px]'
         "
       >
         <div class="text-center">
@@ -343,7 +343,7 @@ export default {
           </h3>
         </div>
 
-        <div class="flex flex-row justify-between">
+        <div class="flex flex-row justify-between my-2">
           <div
             class="flex justify-between font-bold flex-col leading-5 text-xs mx-3"
           >
@@ -362,30 +362,25 @@ export default {
           </div>
 
           <div
-            class="flex justify-between font-bold flex-col leading-5 text-xs ml-2"
+            class="flex justify-between font-bold flex-col text-xs my-1 mx-3"
           >
             <div v-for="value in data?.stats">
-              <div class="base-stat font-bold">
-                {{
-                  value?.base_stat > 9 && value?.base_stat < 100
-                    ? `0${value?.base_stat}`
-                    : `${value?.base_stat}`
-                }}
-              </div>
-            </div>
-          </div>
-
-          <div
-            class="flex justify-between font-bold flex-col leading-5 text-xs my-2 mx-3"
-          >
-            <div v-for="value in data?.stats">
-              <div class="progress-container">
-                <div
-                  :class="['progress-bar', data?.types?.[0]?.type?.name]"
-                  :style="{
-                    maxWidth: `${value?.base_stat}%`,
-                  }"
-                ></div>
+              <div class="flex flex-row justify-start">
+                <div class="base-stat font-bold">
+                  {{
+                    value?.base_stat > 9 && value?.base_stat < 100
+                      ? `0${value?.base_stat}`
+                      : `${value?.base_stat}`
+                  }}
+                </div>
+                <div class="progress-container mt-1 ml-5">
+                  <div
+                    :class="['progress-bar', data?.types?.[0]?.type?.name]"
+                    :style="{
+                      maxWidth: `${value?.base_stat}%`,
+                    }"
+                  ></div>
+                </div>
               </div>
             </div>
           </div>
@@ -641,7 +636,7 @@ export default {
 }
 
 .progress-container {
-  min-width: 200px; /* Default width */
+  min-width: 150px; /* Default width */
   height: 7px;
   background-color: #f1f1f1;
   overflow: hidden;
@@ -657,13 +652,13 @@ export default {
 
 @media (max-width: 350px) {
   .progress-container {
-    min-width: 100px; /* Adjust for smaller screens */
+    min-width: 90px; /* Adjust for smaller screens */
   }
 }
 
 @media (min-width: 380px) {
   .progress-container {
-    min-width: 200px; /* Adjust for larger screens */
+    min-width: 150px; /* Adjust for larger screens */
   }
 }
 

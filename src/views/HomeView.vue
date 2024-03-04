@@ -92,9 +92,9 @@ export default {
       try {
         loading.value = true;
 
-        if (isFiltered && !currentPath?.value?.includes("item")) {
-          data.value = Array.from({ length: 20 });
+        data.value = Array.from({ length: 20 });
 
+        if (isFiltered && !currentPath?.value?.includes("item")) {
           const fetchData = async (url) => {
             const response = await fetch(url);
 
@@ -130,8 +130,6 @@ export default {
           filteredValue?.value?.length === 0 &&
           !currentPath?.value?.includes("item")
         ) {
-          data.value = Array.from({ length: 20 });
-
           const getData = await fetch(
             `https://pokeapi.co/api/v2/pokemon/?offset=${params}&limit=20`
           );
@@ -169,19 +167,19 @@ export default {
         ) {
           loading.value = true;
 
-          const tempData = dataTemp?.value;
+          // const tempData = dataTemp?.value;
 
-          const filterPokemon = tempData?.filter((el) => {
-            return el?.name === searchValue.value;
-          });
+          // const filterPokemon = tempData?.filter((el) => {
+          //   return el?.name === searchValue.value;
+          // });
 
-          // const urlSpecies = `https://pokeapi.co/api/v2/pokemon-species/${searchValue?.value}/`;
-          // const responseSpecies = await fetch(urlSpecies);
-          // const jsonSpecies = await responseSpecies.json();
-          // const jsonSprites = await fetch(
-          //   `https://pokeapi.co/api/v2/pokemon/${jsonSpecies?.id}`
-          // );
-          // const result = await jsonSprites.json();
+          const urlSpecies = `https://pokeapi.co/api/v2/pokemon-species/${searchValue?.value}/`;
+          const responseSpecies = await fetch(urlSpecies);
+          const jsonSpecies = await responseSpecies.json();
+          const jsonSprites = await fetch(
+            `https://pokeapi.co/api/v2/pokemon/${jsonSpecies?.id}`
+          );
+          const result = await jsonSprites.json();
 
           loading.value = false;
 
@@ -189,7 +187,7 @@ export default {
 
           data.value = [];
 
-          dataDetail.value = filterPokemon?.length ? filterPokemon?.[0] : {};
+          dataDetail.value = result;
         }
       } catch (error) {
         loading.value = false;

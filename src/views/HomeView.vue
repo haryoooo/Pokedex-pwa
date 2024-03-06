@@ -278,10 +278,10 @@ export default {
 
 <template>
   <div
-    :class="{ importantBackground: currentPath?.includes('item') || !loader }"
+    :class="{ importantBackground: currentPath?.includes('item') && !loader }"
     :style="{
       backgroundColor:
-        currentPath?.includes('item') || !loader
+        currentPath?.includes('item') && !loader
           ? pokemonType?.[isContainerBg]
           : `#dc211e`,
     }"

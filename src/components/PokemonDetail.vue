@@ -35,9 +35,12 @@ export default {
       );
     };
 
-    const playAudio = () => {
+    const playAudio = (data) => {
       isClicked.value = true;
-      audioPlayer.value.play();
+      const audio = new Audio(
+        `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${data?.id}.ogg`
+      );
+      audio.play();
       setTimeout(() => {
         isClicked.value = false;
       }, 1000);
@@ -226,7 +229,7 @@ export default {
       "
     >
       <div
-        @click="playAudio"
+        @click="() => playAudio(data)"
         :class="
           isClicked
             ? 'container mx-auto flex justify-center items-center h-[20px] animate-bounce'
@@ -259,11 +262,7 @@ export default {
             />
           </div>
         </div>
-        <audio
-          ref="audioPlayer"
-          :src="`https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${data?.id}.ogg`"
-          type="audio/ogg"
-        ></audio>
+        <audio src="audio.mp3" type="audio/mpeg"></audio>
       </div>
 
       <div class="mt-[100px] capitalize text-white mx-auto">

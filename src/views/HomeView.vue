@@ -277,7 +277,6 @@ export default {
 </script>
 
 <template>
-  {{ console.log(pokemonType?.[isContainerBg]) }}
   <div
     :class="{ importantBackground: currentPath?.includes('item') && !loader }"
     :style="{

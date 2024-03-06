@@ -278,11 +278,12 @@ export default {
 
 <template>
   <div
+    :class="{ importantBackground: currentPath?.includes('item') || !loader }"
     :style="{
       backgroundColor:
-        !currentPath?.includes('item') || loader
-          ? `#dc211e`
-          : pokemonType?.[isContainerBg],
+        currentPath?.includes('item') || !loader
+          ? pokemonType?.[isContainerBg]
+          : `#dc211e`,
     }"
     v-if="!currentPath?.includes('item')"
   >
@@ -355,8 +356,9 @@ export default {
     </div>
   </div>
   <div
+    :class="{ importantBackground: !loader }"
     :style="{
-      backgroundColor: loader ? `#dc211e` : pokemonType?.[isContainerBg],
+      backgroundColor: !loader ? pokemonType?.[isContainerBg] : `#dc211e`,
     }"
     v-if="currentPath?.includes('item')"
   >

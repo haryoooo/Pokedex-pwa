@@ -262,8 +262,9 @@ export default {
             />
           </div>
         </div>
-        <audio src="audio.mp3" type="audio/mpeg"></audio>
       </div>
+
+      <audio src="audio.ogg" type="audio/ogg"></audio>
 
       <div class="mt-[100px] capitalize text-white mx-auto">
         <div class="flex flex-row justify-center gap-2">

@@ -277,12 +277,13 @@ export default {
 </script>
 
 <template>
+  {{ console.log(pokemonType?.[isContainerBg]) }}
   <div
     :class="{ importantBackground: currentPath?.includes('item') && !loader }"
     :style="{
       backgroundColor:
         currentPath?.includes('item') && !loader
-          ? pokemonType?.[isContainerBg]
+          ? `${pokemonType?.[isContainerBg]}`
           : `#dc211e`,
     }"
     v-if="!currentPath?.includes('item')"
@@ -296,7 +297,7 @@ export default {
       @handleFiltered="filterByType"
       @change="setSearch"
     />
-    <div class="my-5 bg-white rounded-lg px-1 py-2 m-1 min-h-[100vh]">
+    <div class="my-5 bg-white rounded-lg px-1 py-2 m-1 min-h-screen">
       <div class="flex flex-row flex-wrap">
         <div
           v-if="
@@ -358,7 +359,7 @@ export default {
   <div
     :class="{ importantBackground: !loader }"
     :style="{
-      backgroundColor: !loader ? pokemonType?.[isContainerBg] : `#dc211e`,
+      backgroundColor: !loader ? `${pokemonType?.[isContainerBg]}` : `#dc211e`,
     }"
     v-if="currentPath?.includes('item')"
   >

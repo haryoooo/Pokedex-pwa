@@ -15,7 +15,8 @@
     "lodash": "^4.17.21",
     "vue": "^3.3.4",
     "vue-awesome-paginate": "^1.1.46",
-    "vue-router": "^4.2.4"
+    "vue-router": "^4.2.4",
+    "vuex": "^4.0.2"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.3.4",

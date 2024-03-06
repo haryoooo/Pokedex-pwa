@@ -2,6 +2,7 @@
 import { useRoute, useRouter } from "vue-router";
 import { ref, watchEffect } from "vue";
 import Alert from "./Alert.vue";
+import { useStore } from "vuex";
 
 export default {
   name: "Pokemon Detail",
@@ -12,9 +13,11 @@ export default {
       required: true,
     },
   },
-  setup() {
+  setup(props) {
     const route = useRoute();
     const router = useRouter();
+
+    const store = useStore();
 
     const loading = ref(false);
     const currentPath = ref(route?.params?.id);
@@ -62,6 +65,9 @@ export default {
       try {
         isError.value = false;
         loading.value = true;
+
+        store.dispatch("setBgAsync", "");
+        store.dispatch("setLoaderAsync", true);
 
         let evolution = {};
 
@@ -135,10 +141,14 @@ export default {
 
         loading.value = false;
 
+        store.dispatch("setLoaderAsync", false);
+
         convertZero(json?.id);
       } catch (error) {
         isError.value = true;
         loading.value = false;
+
+        store.dispatch("setLoaderAsync", false);
       }
     };
 
@@ -461,7 +471,7 @@ export default {
     </div>
   </div>
 </template>
-<style scoped>
+<style>
 .container {
   color: white;
 }

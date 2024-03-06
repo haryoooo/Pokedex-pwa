@@ -4,9 +4,11 @@ import Skeleton from "../components/Skeleton.vue";
 import Pagination from "../components/Pagination.vue";
 import PokemonItem from "../components/PokemonItem.vue";
 import PokemonDetail from "../components/PokemonDetail.vue";
+import { pokemonTypes } from "../utils/pokemonTypesBg";
 import { useRoute, useRouter } from "vue-router";
 import { ref, watchEffect, computed } from "vue";
 import _debounce from "lodash/debounce";
+import { useStore } from "vuex";
 
 export default {
   name: "HomeView",
@@ -21,6 +23,7 @@ export default {
   setup() {
     const route = useRoute();
     const router = useRouter();
+    const store = useStore();
 
     const loading = ref(false);
     const data = ref(Array.from({ length: 20 }));
@@ -33,6 +36,9 @@ export default {
     const searchValue = ref("");
     const filteredValue = ref("");
     const isSorted = ref(false);
+    const isContainerBg = ref("");
+    const pokemonType = ref(pokemonTypes);
+    const loader = ref("");
 
     const pagination = ref({});
     const currentPage = ref(route?.query?.page ?? 1);
@@ -166,7 +172,6 @@ export default {
           filteredValue?.value?.length === 0
         ) {
           loading.value = true;
-
           // const tempData = dataTemp?.value;
 
           // const filterPokemon = tempData?.filter((el) => {
@@ -198,6 +203,8 @@ export default {
     watchEffect(() => {
       currentPath.value = route?.path;
       currentId.value = route?.params?.id;
+      isContainerBg.value = store.state.bg;
+      loader.value = store.state.loaderDetail;
 
       const querySearch =
         searchValue?.value?.length > 0 ? `&search=${searchValue?.value}` : "";
@@ -207,8 +214,12 @@ export default {
           ? `&isFiltered=${filteredValue?.value}`
           : "";
 
+      const queryBg = !currentPath.value?.includes("item")
+        ? ""
+        : `&isBg=${isContainerBg.value}`;
+
       router?.push(
-        `?page=${currentPage?.value}&offset=${offset?.value}${querySearch}${queryFilter}`
+        `?page=${currentPage?.value}&offset=${offset?.value}${querySearch}${queryFilter}${queryBg}`
       );
 
       if (filteredValue?.value?.length > 0 && searchValue?.value?.length >= 0) {
@@ -257,13 +268,24 @@ export default {
       filterByType,
       filteredValue,
       handleSort,
+      pokemonType,
+      isContainerBg,
+      loader,
     };
   },
 };
 </script>
 
 <template>
-  <div v-if="!currentPath?.includes('item')">
+  <div
+    :style="{
+      backgroundColor:
+        !currentPath?.includes('item') || loader
+          ? `#dc211e`
+          : pokemonType?.[isContainerBg],
+    }"
+    v-if="!currentPath?.includes('item')"
+  >
     <Headers
       :value="value"
       :loading="loading"
@@ -273,7 +295,7 @@ export default {
       @handleFiltered="filterByType"
       @change="setSearch"
     />
-    <div class="my-5 bg-white rounded-lg px-1 py-2 m-1 min-h-screen">
+    <div class="my-5 bg-white rounded-lg px-1 py-2 m-1 min-h-[100vh]">
       <div class="flex flex-row flex-wrap">
         <div
           v-if="
@@ -285,7 +307,12 @@ export default {
           v-for="val in data"
         >
           <Skeleton v-if="loading" />
-          <PokemonItem v-if="!loading" :data="val" :loading="loading" />
+          <PokemonItem
+            v-if="!loading"
+            :data="val"
+            :loading="loading"
+            :isContainerBg="isContainerBg"
+          />
         </div>
 
         <div class="mx-auto">
@@ -299,7 +326,7 @@ export default {
             No Data Found
           </div>
           <div v-if="!isError && Object.keys(dataDetail)?.length > 0">
-            <PokemonItem :data="dataDetail" />
+            <PokemonItem :data="dataDetail" :isContainerBg="isContainerBg" />
           </div>
         </div>
 
@@ -327,7 +354,14 @@ export default {
       </div>
     </div>
   </div>
-  <PokemonDetail v-if="currentPath?.includes('item')" :id="currentId" />
+  <div
+    :style="{
+      backgroundColor: loader ? `#dc211e` : pokemonType?.[isContainerBg],
+    }"
+    v-if="currentPath?.includes('item')"
+  >
+    <PokemonDetail :id="currentId" />
+  </div>
 </template>
 
 <style scoped></style>

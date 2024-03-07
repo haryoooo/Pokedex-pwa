@@ -3,6 +3,7 @@ import { useRoute, useRouter } from "vue-router";
 import { ref, watchEffect } from "vue";
 import Alert from "./Alert.vue";
 import { useStore } from "vuex";
+import { data } from "autoprefixer";
 
 export default {
   name: "Pokemon Detail",
@@ -333,7 +334,10 @@ export default {
       </div>
 
       <div class="text-left m-5 text-sm text-justify">
-        {{ data?.detail?.flavor_text_entries?.[0]?.flavor_text }}
+        {{
+          data?.detail?.flavor_text_entries?.[0]?.flavor_text ||
+          "There is no detail information about this pokemon and there's only one thing that confirmed... it's rare."
+        }}
       </div>
 
       <div class="horizontal-line my-5 mx-3"></div>

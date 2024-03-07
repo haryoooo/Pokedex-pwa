@@ -6,9 +6,10 @@ import PokemonItem from "../components/PokemonItem.vue";
 import PokemonDetail from "../components/PokemonDetail.vue";
 import { pokemonTypes } from "../utils/pokemonTypesBg";
 import { useRoute, useRouter } from "vue-router";
-import { ref, watchEffect, computed } from "vue";
+import { ref, watchEffect, computed, watch, onMounted, onUnmounted } from "vue";
 import _debounce from "lodash/debounce";
 import { useStore } from "vuex";
+import { data } from "autoprefixer";
 
 export default {
   name: "HomeView",
@@ -172,13 +173,14 @@ export default {
           filteredValue?.value?.length === 0
         ) {
           loading.value = true;
+
+          const search = searchValue.value.toLowerCase();
           // const tempData = dataTemp?.value;
 
           // const filterPokemon = tempData?.filter((el) => {
           //   return el?.name === searchValue.value;
           // });
-
-          const urlSpecies = `https://pokeapi.co/api/v2/pokemon-species/${searchValue?.value}/`;
+          const urlSpecies = `https://pokeapi.co/api/v2/pokemon-species/${search}/`;
           const responseSpecies = await fetch(urlSpecies);
           const jsonSpecies = await responseSpecies.json();
           const jsonSprites = await fetch(
@@ -199,6 +201,23 @@ export default {
         isError.value = true;
       }
     };
+
+    const handlePopState = (event) => {
+      // Check if the user navigated back
+      if (event.state) {
+        router.push(
+          `/?page=${route?.query?.page}&offset=${route?.query?.offset}`
+        );
+      }
+    };
+
+    onMounted(() => {
+      window.addEventListener("popstate", handlePopState);
+    });
+
+    onUnmounted(() => {
+      window.removeEventListener("popstate", handlePopState);
+    });
 
     watchEffect(() => {
       currentPath.value = route?.path;
@@ -239,7 +258,7 @@ export default {
         loading.value = true;
 
         const dataFiltered = tempData.filter((el) =>
-          el?.name?.includes(searchValue?.value)
+          el?.name?.includes(searchValue?.value.toLowerCase())
         );
 
         data.value = dataFiltered;
@@ -253,6 +272,7 @@ export default {
     return {
       data,
       dataDetail,
+      dataTemp,
       loading,
       isError,
       searchValue,
@@ -321,7 +341,9 @@ export default {
             class="my-[40vh] text-lg self-center"
             v-if="
               isError ||
-              (searchValue?.length > 0 && Object.keys(dataDetail)?.length === 0)
+              (searchValue?.length > 0 &&
+                Object.keys(dataDetail)?.length === 0 &&
+                data?.length === 0)
             "
           >
             No Data Found

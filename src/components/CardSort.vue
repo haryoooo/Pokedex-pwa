@@ -27,17 +27,17 @@ export default {
 
     <div class="borderSelection">
       <div>
-        <div class="flex justify-between">
-          <div class="m-1">
+        <div class="flex justify-center">
+          <!-- <div class="m-2">
             <h4>Type:</h4>
-          </div>
+          </div> -->
           <div class="m-1" @click="handleSort">
-            <img src="../assets//images/sort.png" width="20" alt="sort" />
+            <img src="../assets//images/sort.png" width="25" alt="sort" />
           </div>
         </div>
         <hr />
         <div v-for="pokemonType in types">
-          <div class="flex justify-start mx-2">
+          <div class="flex justify-start mx-1 my-2">
             <input
               @change="(e) => handleFiltered(e.target.value)"
               type="radio"
@@ -47,7 +47,7 @@ export default {
               :value="pokemonType.type"
               alt="type-pokemon"
             />
-            <label style="text-transform: capitalize; margin-left: 5px">
+            <label style="text-transform: capitalize; margin-left: 10px">
               {{ pokemonType?.type }}</label
             >
           </div>

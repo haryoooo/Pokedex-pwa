@@ -2,16 +2,19 @@
 
 pokedex pwa created with Vue 3 in Vite.
 
-## Technology
-
+## Tech Stack
+```
 - Vue 3
 - Tailwind
 - Pokeapi
 - Framer motion
 - Vuex
+```
 
 ## Live On :
+```
 https://pokedex-pwa-sigma.vercel.app/
+```
 
 <!-- ## Project Setup
 

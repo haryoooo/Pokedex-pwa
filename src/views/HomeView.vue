@@ -97,6 +97,8 @@ export default {
 
     const getDataList = async (params, isFiltered) => {
       try {
+        isError.value = false;
+
         loading.value = true;
 
         data.value = Array.from({ length: 20 });
@@ -253,6 +255,8 @@ export default {
       }
 
       if (searchValue?.value?.length > 0 && filteredValue?.value?.length > 0) {
+        isError.value = false;
+
         const tempData = data?.value;
 
         loading.value = true;
@@ -264,8 +268,6 @@ export default {
         data.value = dataFiltered;
 
         loading.value = false;
-
-        isError.value = false;
       }
     });
 

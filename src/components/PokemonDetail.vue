@@ -158,12 +158,6 @@ export default {
 
     watchEffect(() => {
       currentPath.value = route?.params?.id;
-
-      if (!route?.params?.id) {
-        router.push(
-          `/?page=${route?.query?.page}&offset=${route?.query?.offset}`
-        );
-      }
     });
 
     getDataDetail();

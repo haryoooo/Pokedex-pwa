@@ -125,7 +125,7 @@ export default {
           #
         </div>
 
-        <div class="absolute z-20 w-28" v-if="showFilter">
+        <div class="absolute z-20 w-32" v-if="showFilter">
           <CardSort :handleFiltered="handleFiltered" :handleSort="handleSort" />
         </div>
       </div>

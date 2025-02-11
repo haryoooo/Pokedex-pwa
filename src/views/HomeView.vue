@@ -1,393 +1,305 @@
-<script>
+<script setup>
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useStore } from "vuex";
+import debounce from "lodash/debounce";
+import { pokemonTypes } from "../utils/pokemonTypesBg";
 import Headers from "../components/Header.vue";
 import Skeleton from "../components/Skeleton.vue";
 import Pagination from "../components/Pagination.vue";
 import PokemonItem from "../components/PokemonItem.vue";
 import PokemonDetail from "../components/PokemonDetail.vue";
-import { pokemonTypes } from "../utils/pokemonTypesBg";
-import { useRoute, useRouter } from "vue-router";
-import { ref, watchEffect, computed, watch, onMounted, onUnmounted } from "vue";
-import _debounce from "lodash/debounce";
-import { useStore } from "vuex";
-import { data } from "autoprefixer";
+import { pokemonApi, ITEMS_PER_PAGE } from "../utils/pokemonAPI";
 
-export default {
-  name: "HomeView",
-  components: { Headers, PokemonItem, PokemonDetail, Pagination, Skeleton },
-  props: {
-    loading: Boolean,
-    value: {
-      type: Array,
-      required: true,
-    },
+// Props
+const props = defineProps({
+  loading: Boolean,
+  value: {
+    type: Array,
+    required: true,
   },
-  setup() {
-    const route = useRoute();
-    const router = useRouter();
-    const store = useStore();
+});
 
-    const loading = ref(false);
-    const data = ref(Array.from({ length: 20 }));
-    const dataTemp = ref(Array.from({ length: 20 }));
-    const dataDetail = ref({});
-    const isError = ref(false);
+// Composables
+const route = useRoute();
+const router = useRouter();
+const store = useStore();
 
-    const currentPath = ref(route?.path);
-    const currentId = ref(route?.params?.id);
-    const searchValue = ref("");
-    const filteredValue = ref("");
-    const isSorted = ref(false);
-    const isContainerBg = ref("");
-    const pokemonType = ref(pokemonTypes);
-    const loader = ref("");
+// State
+const state = ref({
+  loading: false,
+  data: Array.from({ length: ITEMS_PER_PAGE }),
+  dataTemp: Array.from({ length: ITEMS_PER_PAGE }),
+  dataDetail: {},
+  isError: false,
+  currentPath: route?.path,
+  currentId: route?.params?.id,
+  searchValue: "",
+  filteredValue: "",
+  isSorted: false,
+  isContainerBg: "",
+  pagination: {},
+  currentPage: Number(route?.query?.page ?? 1),
+  offset: Number(route?.query?.offset ?? 0),
+});
 
-    const pagination = ref({});
-    const currentPage = ref(route?.query?.page ?? 1);
-    const offset = ref(route?.query?.offset ?? 0);
-    const perPage = 20;
+// Computed
+const paginatedData = computed(() => {
+  const startIndex = (state.value.currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  return state.value.data?.slice(startIndex, endIndex);
+});
 
-    const setCurrentPage = (value, valueOffset) => {
-      currentPage.value = value;
-      offset.value = valueOffset;
-    };
+const totalPages = computed(() =>
+  Math.ceil(state.value.pagination?.count / ITEMS_PER_PAGE)
+);
 
-    const setSearch = _debounce((value) => {
-      searchValue.value = value;
-    }, 300);
+const containerStyles = computed(() => ({
+  backgroundColor:
+    state?.value?.currentPath?.includes("item") && !store.state.loaderDetail
+      ? pokemonTypes[state.value.isContainerBg]
+      : "#dc211e",
+}));
 
-    const paginatedData = computed(() => {
-      const startIndex = (currentPage.value - 1) * perPage;
-      const endIndex = startIndex + perPage;
-      return data?.value?.slice(startIndex, endIndex);
-    });
-
-    const totalPages = computed(() => Math.ceil(pagination?.count / perPage));
-
-    const handleSort = (e) => {
-      isSorted.value = !isSorted.value;
-
-      const tempData = data.value;
-
-      data.value = tempData?.sort((a, b) =>
-        !isSorted.value
-          ? b?.stats?.[1]?.base_stat - a?.stats?.[1]?.base_stat
-          : a?.stats?.[1]?.base_stat - b?.stats?.[1]?.base_stat
-      );
-    };
-
-    const filterByType = async (dataValue) => {
-      if (dataValue === route?.query?.isFiltered) {
-        data.value = dataTemp.value;
-        return;
-      }
-
-      const dataToLowerCase = dataValue?.toLowerCase();
-
-      const url = `https://pokeapi.co/api/v2/type/${dataToLowerCase}`;
-
-      const getDataByType = await fetch(url);
-      const dataJsonByType = await getDataByType.json();
-
-      const payload = dataJsonByType?.pokemon?.map((el) => el?.pokemon);
-
-      filteredValue.value = dataToLowerCase;
-
-      getDataList(payload, true);
-    };
-
-    const getDataList = async (params, isFiltered) => {
-      try {
-        isError.value = false;
-
-        loading.value = true;
-
-        data.value = Array.from({ length: 20 });
-
-        if (isFiltered && !currentPath?.value?.includes("item")) {
-          const fetchData = async (url) => {
-            const response = await fetch(url);
-
-            return response.json();
-          };
-          const result = await Promise.all(
-            params?.map((el) => fetchData(el?.url))
-          );
-
-          const filterResult = result?.sort(
-            (a, b) => b?.stats?.[1]?.base_stat - a?.stats?.[1]?.base_stat
-          );
-
-          data.value = filterResult;
-
-          dataTemp.value = filterResult;
-
-          dataDetail.value = {};
-
-          pagination.value = {
-            count: data.value?.length,
-          };
-
-          isError.value = false;
-
-          setTimeout(() => {
-            loading.value = false;
-          }, 500);
-        }
-
-        if (
-          searchValue?.value?.length === 0 &&
-          filteredValue?.value?.length === 0 &&
-          !currentPath?.value?.includes("item")
-        ) {
-          const getData = await fetch(
-            `https://pokeapi.co/api/v2/pokemon/?offset=${params}&limit=20`
-          );
-          const dataValue = await getData.json();
-
-          const fetchData = async (url) => {
-            const response = await fetch(url);
-
-            return response.json();
-          };
-          const result = await Promise.all(
-            dataValue?.results?.map((el) => fetchData(el?.url))
-          );
-
-          data.value = result;
-
-          dataTemp.value = result;
-
-          dataDetail.value = {};
-
-          pagination.value = {
-            count: dataValue?.count,
-            next: dataValue?.next,
-            previous: dataValue?.previous,
-          };
-
-          isError.value = false;
-
-          loading.value = false;
-        }
-
-        if (
-          searchValue?.value?.length > 0 &&
-          filteredValue?.value?.length === 0
-        ) {
-          loading.value = true;
-
-          const search = searchValue.value.toLowerCase();
-          // const tempData = dataTemp?.value;
-
-          // const filterPokemon = tempData?.filter((el) => {
-          //   return el?.name === searchValue.value;
-          // });
-          const urlSpecies = `https://pokeapi.co/api/v2/pokemon-species/${search}/`;
-          const responseSpecies = await fetch(urlSpecies);
-          const jsonSpecies = await responseSpecies.json();
-          const jsonSprites = await fetch(
-            `https://pokeapi.co/api/v2/pokemon/${jsonSpecies?.id}`
-          );
-          const result = await jsonSprites.json();
-
-          loading.value = false;
-
-          isError.value = false;
-
-          data.value = [];
-
-          dataDetail.value = result;
-        }
-      } catch (error) {
-        loading.value = false;
-        isError.value = true;
-      }
-    };
-
-    const handlePopState = (event) => {
-      // Check if the user navigated back
-      if (event.state) {
-        router.push(
-          `/?page=${route?.query?.page}&offset=${route?.query?.offset}`
-        );
-      }
-    };
-
-    onMounted(() => {
-      window.addEventListener("popstate", handlePopState);
-    });
-
-    onUnmounted(() => {
-      window.removeEventListener("popstate", handlePopState);
-    });
-
-    watchEffect(() => {
-      currentPath.value = route?.path;
-      currentId.value = route?.params?.id;
-      isContainerBg.value = store.state.bg;
-      loader.value = store.state.loaderDetail;
-
-      const querySearch =
-        searchValue?.value?.length > 0 ? `&search=${searchValue?.value}` : "";
-
-      const queryFilter =
-        filteredValue?.value?.length > 0
-          ? `&isFiltered=${filteredValue?.value}`
-          : "";
-
-      const queryBg = !currentPath.value?.includes("item")
-        ? ""
-        : `&isBg=${isContainerBg.value}`;
-
-      router?.push(
-        `?page=${currentPage?.value}&offset=${offset?.value}${querySearch}${queryFilter}${queryBg}`
-      );
-
-      if (filteredValue?.value?.length > 0 && searchValue?.value?.length >= 0) {
-        filterByType(filteredValue.value);
-      }
-
-      if (
-        !currentPath?.value?.includes("item") &&
-        (route?.query?.isFiltered?.length === 0 || !route?.query?.isFiltered)
-      ) {
-        getDataList(route?.query?.offset);
-      }
-
-      if (searchValue?.value?.length > 0 && filteredValue?.value?.length > 0) {
-        isError.value = false;
-
-        const tempData = data?.value;
-
-        loading.value = true;
-
-        const dataFiltered = tempData.filter((el) =>
-          el?.name?.includes(searchValue?.value.toLowerCase())
-        );
-
-        data.value = dataFiltered;
-
-        loading.value = false;
-      }
-    });
-
-    return {
-      data,
-      dataDetail,
-      dataTemp,
-      loading,
-      isError,
-      searchValue,
-      setSearch,
-      setCurrentPage,
-      currentPath,
-      currentId,
-      currentPage,
-      totalPages,
-      pagination,
-      paginatedData,
-      perPage,
-      filterByType,
-      filteredValue,
-      handleSort,
-      pokemonType,
-      isContainerBg,
-      loader,
-    };
-  },
+// Methods
+const setCurrentPage = (value, valueOffset) => {
+  state.value.currentPage = value;
+  state.value.offset = valueOffset;
 };
+
+const setSearch = debounce((value) => {
+  state.value.searchValue = value;
+}, 300);
+
+const handleSort = () => {
+  state.value.isSorted = !state.value.isSorted;
+  state.value.data = [...state.value.data].sort((a, b) =>
+    state.value.isSorted
+      ? a?.stats?.[1]?.base_stat - b?.stats?.[1]?.base_stat
+      : b?.stats?.[1]?.base_stat - a?.stats?.[1]?.base_stat
+  );
+};
+
+const filterByType = async (dataValue) => {
+  if (dataValue === route?.query?.isFiltered) {
+    state.value.data = state.value.dataTemp;
+    return;
+  }
+
+  if(!dataValue){
+    state.value.filteredValue = "";
+    return
+  }
+  
+  try {
+    state.value.loading = true;
+    const dataJson = await pokemonApi.fetchPokemonByType(
+      dataValue.toLowerCase()
+    );
+    const pokemonList = await Promise.all(
+      dataJson.pokemon.map(({ pokemon }) =>
+        pokemonApi.fetchPokemonDetail(pokemon.url)
+      )
+    );
+
+    state.value.filteredValue = dataValue.toLowerCase();
+    state.value.data = pokemonList.sort(
+      (a, b) => b?.stats?.[1]?.base_stat - a?.stats?.[1]?.base_stat
+    );
+    state.value.dataTemp = [...state.value.data];
+    state.value.dataDetail = {};
+    state.value.pagination = { count: state.value.data.length };
+  } catch (error) {
+    state.value.isError = true;
+  } finally {
+    state.value.loading = false;
+  }
+};
+
+const getDataList = async (offset, isFiltered = false) => {
+  try {
+    state.value.loading = true;
+    state.value.isError = false;
+    state.value.data = Array.from({ length: ITEMS_PER_PAGE });
+
+    if (state.value.searchValue && !state.value.filteredValue) {
+      const result = await pokemonApi.fetchPokemonByName(
+        state.value.searchValue.toLowerCase()
+      );
+      state.value.dataDetail = result;
+      state.value.data = [];
+      return;
+    }
+
+    if (!isFiltered && !state.value.searchValue && !state.value.filteredValue) {
+      const data = await pokemonApi.fetchPokemonList(offset);
+      const pokemonDetails = await Promise.all(
+        data.results.map((pokemon) =>
+          pokemonApi.fetchPokemonDetail(pokemon.url)
+        )
+      );
+
+      state.value.data = pokemonDetails;
+      state.value.dataTemp = [...pokemonDetails];
+      state.value.dataDetail = {};
+      state.value.pagination = {
+        count: data.count,
+        next: data.next,
+        previous: data.previous,
+      };
+    }
+  } catch (error) {
+    state.value.isError = true;
+  } finally {
+    state.value.loading = false;
+  }
+};
+
+// Router handling
+const handlePopState = (event) => {
+  if (event.state) {
+    router.push(`/?page=${route?.query?.page}&offset=${route?.query?.offset}`);
+  }
+};
+
+// Lifecycle hooks
+onMounted(() => {
+  window.addEventListener("popstate", handlePopState);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("popstate", handlePopState);
+});
+
+// Watchers
+watch(
+  () => [
+    route.path,
+    route.params.id,
+    store.state.bg,
+    state.value.searchValue,
+    state.value.filteredValue,
+    state.value.currentPage,
+  ],
+  async ([newPath, newId, newBg, newSearch, newFilter, newPage]) => {
+    state.value.currentPath = newPath;
+    state.value.currentId = newId;
+    state.value.isContainerBg = store.state.bg;
+
+    const queryParams = new URLSearchParams({
+      page: state.value.currentPage,
+      offset: state.value.offset,
+      ...(newSearch && { search: newSearch }),
+      ...(newFilter && { isFiltered: newFilter }),
+      ...(newPath?.includes("item") && { isBg: state.value.isContainerBg }),
+    });
+
+    router.push(`?${queryParams.toString()}`);
+
+    if (newFilter && !newPath?.includes("item")) {
+      await filterByType(newFilter);
+    } else if (!newPath?.includes("item") && !route?.query?.isFiltered) {
+      await getDataList(route?.query?.offset);
+    }
+
+    if (newSearch && newFilter) {
+      state.value.data = state.value.data.filter((el) =>
+        el?.name?.includes(newSearch.toLowerCase())
+      );
+    }
+  },
+  { deep: true }
+);
 </script>
 
 <template>
-  <div
-    :class="{ importantBackground: currentPath?.includes('item') && !loader }"
-    :style="{
-      backgroundColor:
-        currentPath?.includes('item') && !loader
-          ? `${pokemonType?.[isContainerBg]}`
-          : `#dc211e`,
-    }"
-    v-if="!currentPath?.includes('item')"
-  >
-    <Headers
-      :value="value"
-      :loading="loading"
-      :search-value="searchValue"
-      :filter="filteredValue"
-      @handleSort="handleSort"
-      @handleFiltered="filterByType"
-      @change="setSearch"
-    />
-    <div class="my-5 bg-white rounded-lg px-1 py-2 m-1 min-h-screen">
-      <div class="flex flex-row flex-wrap">
-        <div
-          v-if="
-            !isError &&
-            Object.keys(dataDetail)?.length === 0 &&
-            data?.length > 0
-          "
-          :class="`cursor-pointer mx-auto ${loading ? 'm-1' : ''}`"
-          v-for="val in data"
-        >
-          <Skeleton v-if="loading" />
-          <PokemonItem
-            v-if="!loading"
-            :data="val"
-            :loading="loading"
-            :isContainerBg="isContainerBg"
-          />
-        </div>
+  <div :style="containerStyles">
+    <template v-if="!state.currentPath?.includes('item')">
+      <Headers
+        :value="value"
+        :loading="state.loading"
+        :search-value="state.searchValue"
+        :filter="state.filteredValue"
+        @handleSort="handleSort"
+        @handleFiltered="filterByType"
+        @change="setSearch"
+      />
 
-        <div class="mx-auto">
-          <div
-            class="my-[40vh] text-lg self-center"
+      <div class="mt-5 bg-white rounded-lg px-1 py-2 mx-1 min-h-screen">
+        <div class="flex flex-row flex-wrap">
+          <!-- Loading state -->
+          <template
             v-if="
-              isError ||
-              (searchValue?.length > 0 &&
-                Object.keys(dataDetail)?.length === 0 &&
-                data?.length === 0)
+              !state.isError &&
+              Object.keys(state.dataDetail)?.length === 0 &&
+              state.data?.length > 0
             "
           >
-            No Data Found
-          </div>
-          <div v-if="!isError && Object.keys(dataDetail)?.length > 0">
-            <PokemonItem :data="dataDetail" :isContainerBg="isContainerBg" />
-          </div>
-        </div>
+            <div
+              v-for="val in state.data"
+              :key="val?.id"
+              :class="`cursor-pointer mx-auto ${state.loading ? 'm-1' : ''}`"
+            >
+              <Skeleton v-if="state.loading" />
+              <PokemonItem
+                v-else
+                :data="val"
+                :loading="state.loading"
+                :isContainerBg="state.isContainerBg"
+              />
+            </div>
+          </template>
 
-        <div
-          v-if="
-            !loading &&
-            !isError &&
-            pagination?.next &&
-            Object.keys(data)?.length > 0
-          "
-          class="mx-auto"
-        >
-          <Pagination
-            :data="data"
-            :loading="loading"
-            :paginatedData="paginatedData"
-            :pagination="pagination"
-            :currentPages="currentPage"
-            :totalPages="totalPages"
-            :perPage="perPage"
-            v-model:currentPage="currentPage"
-            @setCurrPage="setCurrentPage"
-          />
+          <!-- Error or No Results -->
+          <div class="mx-auto">
+            <div
+              v-if="
+                state.isError ||
+                (state.searchValue?.length > 0 &&
+                  Object.keys(state.dataDetail)?.length === 0 &&
+                  state.data?.length === 0)
+              "
+              class="my-[40vh] text-lg self-center"
+            >
+              No Data Found
+            </div>
+
+            <!-- Pokemon Detail -->
+            <PokemonItem
+              v-if="!state.isError && Object.keys(state.dataDetail)?.length > 0"
+              :data="state.dataDetail"
+              :isContainerBg="state.isContainerBg"
+            />
+          </div>
+
+          <!-- Pagination -->
+          <div
+            v-if="
+              !state.loading &&
+              !state.isError &&
+              state.pagination?.next &&
+              Object.keys(state.data)?.length > 0
+            "
+            class="mx-auto"
+          >
+            <Pagination
+              :data="state.data"
+              :loading="state.loading"
+              :paginatedData="paginatedData"
+              :pagination="state.pagination"
+              :currentPages="state.currentPage"
+              :totalPages="totalPages"
+              :perPage="ITEMS_PER_PAGE"
+              v-model:currentPage="state.currentPage"
+              @setCurrPage="setCurrentPage"
+            />
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-  <div
-    :class="{ importantBackground: !loader }"
-    :style="{
-      backgroundColor: !loader ? `${pokemonType?.[isContainerBg]}` : `#dc211e`,
-    }"
-    v-if="currentPath?.includes('item')"
-  >
-    <PokemonDetail :id="currentId" />
+    </template>
+
+    <PokemonDetail v-else :id="state.currentId" />
   </div>
 </template>
 
-<style scoped></style>
+<style></style>

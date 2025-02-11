@@ -51,6 +51,10 @@ export default {
     }, showFilter);
 
     watchEffect(() => {
+      if(!route?.params?.isFiltered){
+        showFilter.value = false
+      }
+
       filter.value = route?.query?.isFiltered;
     });
 
@@ -87,7 +91,7 @@ export default {
             </div>
             <div class="cursor-pointer">
               <input
-                class="min-w-min outline-none"
+                class="min-w-min outline-none "
                 type="text"
                 placeholder="Search"
                 :value="searchValue"
@@ -100,7 +104,7 @@ export default {
 
       <div
         ref="showFiltered"
-        class="rounded-full bg-white cursor-pointer min-w-[80px]"
+        class="rounded-full bg-white cursor-pointer w-1/2"
       >
         <div
           v-if="filter?.length > 0"
@@ -121,7 +125,7 @@ export default {
           #
         </div>
 
-        <div class="absolute z-20" v-if="showFilter">
+        <div class="absolute z-20 w-40 right-[180px]" v-if="showFilter">
           <CardSort :handleFiltered="handleFiltered" :handleSort="handleSort" />
         </div>
       </div>

@@ -37,7 +37,7 @@ export default {
         </div>
         <hr />
         <div v-for="pokemonType in types">
-          <div class="flex justify-start mx-1 my-2">
+          <div class="flex justify-start mx-1 my-2 gap-2">
             <input
               @change="(e) => handleFiltered(e.target.value)"
               type="radio"
@@ -46,8 +46,9 @@ export default {
               "
               :value="pokemonType.type"
               alt="type-pokemon"
+              class="w-6 h-6 accent-[#dc211e] cursor-pointer"
             />
-            <label style="text-transform: capitalize; margin-left: 10px">
+            <label class="font-bold text-md" style="text-transform: capitalize; margin-left: 10px">
               {{ pokemonType?.type }}</label
             >
           </div>
